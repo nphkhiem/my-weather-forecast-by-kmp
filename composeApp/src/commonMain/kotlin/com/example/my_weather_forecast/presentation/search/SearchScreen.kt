@@ -15,8 +15,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.my_weather_forecast.presentation.platform.LocalWeatherPlatformBehavior
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.add_area_title
 import myweatherforecast.composeapp.generated.resources.back
@@ -42,12 +42,10 @@ fun SearchScreen(
     val atLimitMessage = stringResource(Res.string.search_at_limit)
     val alreadySavedMessage = stringResource(Res.string.search_already_saved)
     val addFailedMessage = stringResource(Res.string.search_add_failed)
-    val keyboardController = LocalSoftwareKeyboardController.current
+    val platformBehavior = LocalWeatherPlatformBehavior.current
 
-    // The on-screen keyboard doesn't follow focus/navigation automatically on iOS the way it
-    // does on Android, so it has to be dismissed explicitly on every path out of this screen.
     val onBackDismissingKeyboard: () -> Unit = {
-        keyboardController?.hide()
+        platformBehavior.dismissKeyboard()
         onBack()
     }
 
