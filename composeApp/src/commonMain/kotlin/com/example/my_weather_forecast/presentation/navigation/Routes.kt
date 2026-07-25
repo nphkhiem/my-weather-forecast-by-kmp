@@ -1,10 +1,17 @@
 package com.example.my_weather_forecast.presentation.navigation
 
-object Routes {
-    const val OVERVIEW = "overview"
-    const val SEARCH = "search"
-    const val SETTINGS = "settings"
-    const val DETAIL = "detail/{locationId}"
+import kotlinx.serialization.Serializable
 
-    fun detail(locationId: Long) = "detail/$locationId"
+object Routes {
+    @Serializable
+    data object Overview
+
+    @Serializable
+    data object Search
+
+    @Serializable
+    data object Settings
+
+    @Serializable
+    data class Detail(val locationId: Long)
 }
