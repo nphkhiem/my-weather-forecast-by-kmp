@@ -34,6 +34,8 @@
     <string name="error_generic_search">Something went wrong. Try again.</string>
 
     <string name="search_label">Search for a city</string>
+    <string name="clear_search">Clear search</string>
+    <string name="searching">Searching</string>
     <string name="search_at_limit">You can save up to 6 areas</string>
     <string name="search_already_saved">This area is already saved</string>
     <string name="search_add_failed">Could not add this area</string>

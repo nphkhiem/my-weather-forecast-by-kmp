@@ -74,6 +74,7 @@ fun SearchScreen(
             query = query,
             onQueryChange = viewModel::onQueryChange,
             onLocationClick = viewModel::addLocation,
+            onSearch = platformBehavior::dismissKeyboard,
             modifier = Modifier.fillMaxSize(),
         )
     }

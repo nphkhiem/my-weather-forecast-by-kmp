@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,7 +27,6 @@ import myweatherforecast.composeapp.generated.resources.error_rate_limited
 import myweatherforecast.composeapp.generated.resources.error_unauthorized_search
 import myweatherforecast.composeapp.generated.resources.location_result_accessibility
 import myweatherforecast.composeapp.generated.resources.location_subtitle_with_state
-import myweatherforecast.composeapp.generated.resources.search_label
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -38,21 +35,24 @@ fun SearchContent(
     query: String,
     onQueryChange: (String) -> Unit,
     onLocationClick: (Location) -> Unit,
+    onSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
+    autoFocusSearch: Boolean = true,
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            label = { Text(stringResource(Res.string.search_label)) },
-            singleLine = true,
+        WeatherSearchField(
+            query = query,
+            isLoading = uiState is SearchUiState.Loading,
+            onQueryChange = onQueryChange,
+            onSearch = onSearch,
+            autoFocus = autoFocusSearch,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
         )
         when (uiState) {
             is SearchUiState.Idle -> Unit
-            is SearchUiState.Loading -> LoadingRow()
+            is SearchUiState.Loading -> Unit
             is SearchUiState.Empty -> MessageRow(stringResource(Res.string.error_not_found_search))
             is SearchUiState.Error -> {
                 val message = uiState.error.toMessage()
@@ -60,13 +60,6 @@ fun SearchContent(
             }
             is SearchUiState.Results -> ResultsList(uiState.locations, onLocationClick)
         }
-    }
-}
-
-@Composable
-private fun LoadingRow(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxWidth().padding(24.dp), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
     }
 }
 
