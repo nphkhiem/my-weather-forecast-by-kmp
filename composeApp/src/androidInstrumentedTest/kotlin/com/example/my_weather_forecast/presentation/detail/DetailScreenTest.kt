@@ -11,6 +11,7 @@ import androidx.compose.ui.test.swipeDown
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.ForecastObservation
 import com.example.my_weather_forecast.domain.model.Location
+import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
 import com.example.my_weather_forecast.testutil.FakeSavedLocationRepository
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
@@ -46,12 +47,14 @@ class DetailScreenTest {
         weatherRepository.setObservation(chicago.id, ForecastObservation.Success(sampleForecast(chicago), stale = false))
 
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                DetailScreen(
-                    locationId = chicago.id,
-                    onBack = {},
-                    viewModel = viewModel(savedLocationRepository, weatherRepository),
-                )
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreen(
+                        locationId = chicago.id,
+                        onBack = {},
+                        viewModel = viewModel(savedLocationRepository, weatherRepository),
+                    )
+                }
             }
         }
         return weatherRepository
@@ -74,12 +77,14 @@ class DetailScreenTest {
         var backInvoked = false
 
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                DetailScreen(
-                    locationId = chicago.id,
-                    onBack = { backInvoked = true },
-                    viewModel = viewModel(savedLocationRepository, weatherRepository),
-                )
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreen(
+                        locationId = chicago.id,
+                        onBack = { backInvoked = true },
+                        viewModel = viewModel(savedLocationRepository, weatherRepository),
+                    )
+                }
             }
         }
 
@@ -95,12 +100,14 @@ class DetailScreenTest {
         weatherRepository.setObservation(chicago.id, ForecastObservation.Error(WeatherError.Network))
 
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                DetailScreen(
-                    locationId = chicago.id,
-                    onBack = {},
-                    viewModel = viewModel(savedLocationRepository, weatherRepository),
-                )
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreen(
+                        locationId = chicago.id,
+                        onBack = {},
+                        viewModel = viewModel(savedLocationRepository, weatherRepository),
+                    )
+                }
             }
         }
 

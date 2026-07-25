@@ -1,17 +1,13 @@
 package com.example.my_weather_forecast.presentation.overview
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -19,6 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.my_weather_forecast.presentation.components.WeatherScreenFrame
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.add_area
 import myweatherforecast.composeapp.generated.resources.app_title
@@ -67,29 +65,32 @@ fun OverviewScreen(
         }
     }
 
-    Scaffold(
+    WeatherScreenFrame(
+        title = stringResource(Res.string.app_title),
         modifier = modifier,
+        contentMaxWidth = WeatherLayout.OverviewMaxWidth,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.app_title)) },
-                actions = {
-                    IconButton(onClick = onOpenSettings) {
-                        Icon(painter = painterResource(Res.drawable.ic_settings), contentDescription = stringResource(Res.string.settings))
-                    }
-                },
-            )
+        actions = {
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    painter = painterResource(Res.drawable.ic_settings),
+                    contentDescription = stringResource(Res.string.settings),
+                )
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = onOpenSearch) {
-                Icon(painter = painterResource(Res.drawable.ic_add), contentDescription = stringResource(Res.string.add_area))
+                Icon(
+                    painter = painterResource(Res.drawable.ic_add),
+                    contentDescription = stringResource(Res.string.add_area),
+                )
             }
         },
-    ) { paddingValues ->
+    ) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = viewModel::refresh,
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         ) {
             OverviewContent(
                 uiState = uiState,

@@ -13,6 +13,7 @@ import com.example.my_weather_forecast.domain.model.Location
 import com.example.my_weather_forecast.domain.usecase.AddLocationUseCase
 import com.example.my_weather_forecast.domain.usecase.ObserveSavedLocationsUseCase
 import com.example.my_weather_forecast.domain.usecase.RemoveLocationUseCase
+import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
 import com.example.my_weather_forecast.testutil.FakeSavedLocationRepository
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
@@ -48,13 +49,15 @@ class OverviewScreenTest {
         weatherRepository.setObservation(chicago.id, ForecastObservation.Success(sampleForecast(chicago), stale = false))
 
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                OverviewScreen(
-                    onOpenSearch = {},
-                    onOpenSettings = {},
-                    onOpenDetail = {},
-                    viewModel = viewModel(savedLocationRepository, weatherRepository),
-                )
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    OverviewScreen(
+                        onOpenSearch = {},
+                        onOpenSettings = {},
+                        onOpenDetail = {},
+                        viewModel = viewModel(savedLocationRepository, weatherRepository),
+                    )
+                }
             }
         }
         return savedLocationRepository to weatherRepository
@@ -70,13 +73,15 @@ class OverviewScreenTest {
     @Test
     fun givenNoSavedAreas_whenLaunched_thenEmptyStateShowsAddCityCta() {
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                OverviewScreen(
-                    onOpenSearch = {},
-                    onOpenSettings = {},
-                    onOpenDetail = {},
-                    viewModel = viewModel(FakeSavedLocationRepository(), FakeWeatherRepository()),
-                )
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    OverviewScreen(
+                        onOpenSearch = {},
+                        onOpenSettings = {},
+                        onOpenDetail = {},
+                        viewModel = viewModel(FakeSavedLocationRepository(), FakeWeatherRepository()),
+                    )
+                }
             }
         }
 

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.example.my_weather_forecast.core.preference.ThemeMode
 import com.example.my_weather_forecast.domain.model.Units
+import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
 import com.example.my_weather_forecast.testutil.FakeThemePreference
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
@@ -24,8 +25,10 @@ class SettingsScreenTest {
     ): SettingsViewModel {
         val viewModel = SettingsViewModel(unitsPreference = unitsPreference, themePreference = themePreference)
         composeTestRule.setContent {
-            WeatherForecastTheme {
-                SettingsScreen(onBack = {}, viewModel = viewModel)
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    SettingsScreen(onBack = {}, viewModel = viewModel)
+                }
             }
         }
         return viewModel

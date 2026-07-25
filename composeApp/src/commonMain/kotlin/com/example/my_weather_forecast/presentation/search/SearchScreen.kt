@@ -1,22 +1,18 @@
 package com.example.my_weather_forecast.presentation.search
 
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.my_weather_forecast.presentation.components.WeatherScreenFrame
 import com.example.my_weather_forecast.presentation.platform.LocalWeatherPlatformBehavior
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.add_area_title
 import myweatherforecast.composeapp.generated.resources.back
@@ -29,7 +25,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 
-@OptIn(ExperimentalMaterial3Api::class, KoinExperimentalAPI::class)
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 fun SearchScreen(
     onBack: () -> Unit,
@@ -60,26 +56,25 @@ fun SearchScreen(
         }
     }
 
-    Scaffold(
+    WeatherScreenFrame(
+        title = stringResource(Res.string.add_area_title),
         modifier = modifier,
+        contentMaxWidth = WeatherLayout.FormMaxWidth,
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(Res.string.add_area_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBackDismissingKeyboard) {
-                        Icon(painter = painterResource(Res.drawable.ic_back), contentDescription = stringResource(Res.string.back))
-                    }
-                },
+        onNavigationClick = onBackDismissingKeyboard,
+        navigationIcon = {
+            Icon(
+                painter = painterResource(Res.drawable.ic_back),
+                contentDescription = stringResource(Res.string.back),
             )
         },
-    ) { paddingValues ->
+    ) {
         SearchContent(
             uiState = uiState,
             query = query,
             onQueryChange = viewModel::onQueryChange,
             onLocationClick = viewModel::addLocation,
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
