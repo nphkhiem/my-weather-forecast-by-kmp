@@ -29,6 +29,7 @@ import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
 import com.example.my_weather_forecast.domain.model.Units
 import com.example.my_weather_forecast.presentation.theme.AnimatedWeatherIcon
+import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.palette
 import com.example.my_weather_forecast.presentation.theme.readableName
 import kotlin.math.roundToInt
@@ -91,7 +92,7 @@ private fun WeatherError.toMessage(): String = when (this) {
 private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Modifier) {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val dateLabels = remember(state.forecast.daily) { state.forecast.daily.map { it.date }.dailyDateLabels() }
-    val palette = state.forecast.current.condition.palette()
+    val palette = state.forecast.current.condition.palette(darkTheme = WeatherTheme.darkTheme)
 
     Column(
         modifier = modifier

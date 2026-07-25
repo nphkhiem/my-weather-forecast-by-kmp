@@ -43,7 +43,7 @@ fun AnimatedWeatherIcon(
     modifier: Modifier = Modifier,
 ) {
     val painter = painterResource(icon.toDrawableResource())
-    val tint = icon.accentColor(isDaytime)
+    val tint = icon.accentColor(isDaytime = isDaytime, darkTheme = WeatherTheme.darkTheme)
     val transition = rememberInfiniteTransition(label = "weatherIconMotion")
 
     when {

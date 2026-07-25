@@ -17,6 +17,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.palette
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.back
@@ -38,7 +39,11 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-    val palette = (uiState as? DetailUiState.Success)?.forecast?.current?.condition?.palette()
+    val palette = (uiState as? DetailUiState.Success)
+        ?.forecast
+        ?.current
+        ?.condition
+        ?.palette(darkTheme = WeatherTheme.darkTheme)
     val headerContainerColor = palette?.gradientStart ?: MaterialTheme.colorScheme.surface
     val headerContentColor = palette?.onGradient ?: MaterialTheme.colorScheme.onSurface
 

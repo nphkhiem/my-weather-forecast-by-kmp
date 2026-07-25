@@ -9,47 +9,45 @@ import kotlin.test.assertTrue
 class ConditionPaletteTest {
 
     @Test
-    fun givenEveryDaytimeCondition_whenMapped_thenEachHasADistinctGradientStart() {
-        val starts = WeatherIcon.entries.map { it.conditionPalette(isDaytime = true).gradientStart }
+    fun givenEveryConditionInEachTheme_whenMapped_thenEachHasADistinctGradientStart() {
+        listOf(false, true).forEach { darkTheme ->
+            val starts = WeatherIcon.entries.map {
+                it.conditionPalette(isDaytime = true, darkTheme = darkTheme).gradientStart
+            }
 
-        assertEquals(WeatherIcon.entries.size, starts.toSet().size)
+            assertEquals(WeatherIcon.entries.size, starts.toSet().size)
+        }
     }
 
     @Test
-    fun givenConditionsThatCommonlyOccurTogetherAtNight_whenMapped_thenTheyShareACalmerCollapsedPalette() {
-        val rain = WeatherIcon.RAIN.conditionPalette(isDaytime = false)
-        val drizzle = WeatherIcon.DRIZZLE.conditionPalette(isDaytime = false)
-        val thunderstorm = WeatherIcon.THUNDERSTORM.conditionPalette(isDaytime = false)
+    fun givenAnyLocalTimeInLightTheme_whenMapped_thenWashStaysLightWithDarkContent() {
+        WeatherIcon.entries.forEach { icon ->
+            listOf(false, true).forEach { isDaytime ->
+                val palette = icon.conditionPalette(isDaytime = isDaytime, darkTheme = false)
 
-        assertEquals(rain, drizzle)
-        assertEquals(rain, thunderstorm)
+                assertTrue(palette.gradientStart.luminance() > 0.65f)
+                assertTrue(palette.gradientEnd.luminance() > 0.65f)
+                assertTrue(palette.onGradient.luminance() < 0.20f)
+            }
+        }
     }
 
     @Test
-    fun givenClearAndCloudsAtNight_whenMapped_thenTheyShareTheSameNightPalette() {
-        assertEquals(
-            WeatherIcon.CLEAR.conditionPalette(isDaytime = false),
-            WeatherIcon.CLOUDS.conditionPalette(isDaytime = false),
-        )
-    }
+    fun givenAnyLocalTimeInDarkTheme_whenMapped_thenWashStaysDarkWithLightContent() {
+        WeatherIcon.entries.forEach { icon ->
+            listOf(false, true).forEach { isDaytime ->
+                val palette = icon.conditionPalette(isDaytime = isDaytime, darkTheme = true)
 
-    @Test
-    fun givenADaytimePalette_whenReadingItsOnGradientColor_thenItIsDarkForLegibilityOnALightGradient() {
-        val palette = WeatherIcon.CLEAR.conditionPalette(isDaytime = true)
-
-        assertTrue(palette.onGradient.luminance() < 0.5f)
-    }
-
-    @Test
-    fun givenANighttimePalette_whenReadingItsOnGradientColor_thenItIsLightForLegibilityOnADarkGradient() {
-        val palette = WeatherIcon.CLEAR.conditionPalette(isDaytime = false)
-
-        assertTrue(palette.onGradient.luminance() > 0.5f)
+                assertTrue(palette.gradientStart.luminance() < 0.10f)
+                assertTrue(palette.gradientEnd.luminance() < 0.10f)
+                assertTrue(palette.onGradient.luminance() > 0.70f)
+            }
+        }
     }
 
     @Test
     fun givenTheSamePaletteRequestedTwice_whenCompared_thenGradientStaysWithinASoftLightnessRange() {
-        val palette = WeatherIcon.RAIN.conditionPalette(isDaytime = true)
+        val palette = WeatherIcon.RAIN.conditionPalette(isDaytime = true, darkTheme = false)
 
         val startLuminance = palette.gradientStart.luminance()
         val endLuminance = palette.gradientEnd.luminance()
@@ -57,17 +55,23 @@ class ConditionPaletteTest {
     }
 
     @Test
-    fun givenEveryDaytimeCondition_whenReadingAccentColor_thenEachHasADistinctColor() {
-        val accents = WeatherIcon.entries.map { it.accentColor(isDaytime = true) }
+    fun givenEveryConditionInEachTheme_whenReadingAccentColor_thenEachHasADistinctColor() {
+        listOf(false, true).forEach { darkTheme ->
+            val accents = WeatherIcon.entries.map {
+                it.accentColor(isDaytime = true, darkTheme = darkTheme)
+            }
 
-        assertEquals(WeatherIcon.entries.size, accents.toSet().size)
+            assertEquals(WeatherIcon.entries.size, accents.toSet().size)
+        }
     }
 
     @Test
-    fun givenClearDaytime_whenReadingAccentColor_thenItDiffersFromItsOwnNighttimeAccent() {
-        val day = WeatherIcon.CLEAR.accentColor(isDaytime = true)
-        val night = WeatherIcon.CLEAR.accentColor(isDaytime = false)
+    fun givenAnyCondition_whenReadingAccentColor_thenDayAndNightAccentsDiffer() {
+        WeatherIcon.entries.forEach { icon ->
+            val day = icon.accentColor(isDaytime = true, darkTheme = false)
+            val night = icon.accentColor(isDaytime = false, darkTheme = false)
 
-        assertTrue(day != night, "day and night accents for the same condition should differ")
+            assertTrue(day != night, "day and night accents for $icon should differ")
+        }
     }
 }

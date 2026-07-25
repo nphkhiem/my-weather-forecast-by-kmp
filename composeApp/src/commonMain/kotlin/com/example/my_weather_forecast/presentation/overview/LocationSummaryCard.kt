@@ -29,6 +29,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.presentation.theme.AnimatedWeatherIcon
+import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.conditionPalette
 import com.example.my_weather_forecast.presentation.theme.readableName
 import kotlin.math.roundToInt
@@ -70,7 +71,10 @@ fun LocationSummaryCard(
         Res.string.area_accessibility,
         area.name, currentTemp, todayHigh, todayLow, rainChance, staleSuffix,
     )
-    val palette = area.icon.conditionPalette(area.isDaytime)
+    val palette = area.icon.conditionPalette(
+        isDaytime = area.isDaytime,
+        darkTheme = WeatherTheme.darkTheme,
+    )
 
     SwipeToDismissBox(
         state = dismissState,
