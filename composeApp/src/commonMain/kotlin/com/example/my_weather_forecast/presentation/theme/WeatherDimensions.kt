@@ -49,6 +49,18 @@ object WeatherLayout {
     val CompactAppBarHeight = 56.dp
 }
 
+object SearchFieldTokens {
+    val Height = 54.dp
+    val HorizontalPadding = 16.dp
+    val LeadingIconSize = 20.dp
+    val LeadingIconGap = 12.dp
+    val TrailingVisualSize = 20.dp
+    val TrailingTouchTarget = WeatherLayout.MinimumTouchTarget
+    val TrailingEndPadding = 4.dp
+    val FocusRingWidth = 2.dp
+    val ShapeRadius = WeatherRadii.SearchField
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120

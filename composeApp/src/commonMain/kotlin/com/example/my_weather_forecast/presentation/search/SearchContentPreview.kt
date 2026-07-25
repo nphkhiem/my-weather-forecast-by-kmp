@@ -16,7 +16,13 @@ private val results = listOf(
 private fun SearchContentPreview(uiState: SearchUiState, query: String, darkTheme: Boolean) {
     WeatherForecastTheme(darkTheme = darkTheme) {
         Surface {
-            SearchContent(uiState = uiState, query = query, onQueryChange = {}, onLocationClick = {})
+            SearchContent(
+                uiState = uiState,
+                query = query,
+                onQueryChange = {},
+                onLocationClick = {},
+                autoFocusSearch = false,
+            )
         }
     }
 }
