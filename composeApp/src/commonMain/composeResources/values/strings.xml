@@ -40,6 +40,10 @@
     <string name="search_already_saved">This area is already saved</string>
     <string name="search_add_failed">Could not add this area</string>
     <string name="add_area_title">Add area</string>
+    <string name="search_results_title">Search results</string>
+    <string name="search_results_hint">Choose a place to add to Weather</string>
+    <string name="search_results_count">%1$d found</string>
+    <string name="search_precision_hint">Search by city and country for more precise results.</string>
     <string name="location_subtitle_with_state">%1$s, %2$s</string>
     <string name="location_result_accessibility">%1$s, %2$s</string>
 

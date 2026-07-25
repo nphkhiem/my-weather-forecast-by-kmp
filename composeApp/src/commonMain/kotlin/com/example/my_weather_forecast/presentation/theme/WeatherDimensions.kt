@@ -61,6 +61,23 @@ object SearchFieldTokens {
     val ShapeRadius = WeatherRadii.SearchField
 }
 
+object SearchResultTokens {
+    val GroupRadius = WeatherRadii.Card
+    val GroupVerticalPadding = WeatherSpacing.Xs
+    val RowMinHeight = 68.dp
+    val RowHorizontalPadding = WeatherSpacing.Lg
+    val RowVerticalPadding = WeatherSpacing.Sm
+    val LeadingContainerSize = 40.dp
+    val LeadingIconSize = 20.dp
+    val LeadingGap = WeatherSpacing.Md
+    val TextLineGap = WeatherSpacing.Hairline
+    val TrailingSlotSize = WeatherLayout.MinimumTouchTarget
+    val TrailingIconSize = 20.dp
+    val SeparatorThickness = 1.dp
+    val SeparatorStartInset = 68.dp
+    const val PressedScale = 0.995f
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120

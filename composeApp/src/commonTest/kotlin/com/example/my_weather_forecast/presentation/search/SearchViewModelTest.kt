@@ -107,4 +107,51 @@ class SearchViewModelTest {
             assertEquals(1, results.locations.size)
         }
     }
+
+    @Test
+    fun givenOrderedUniqueResults_whenSearched_thenRepositoryOrderIsPreserved() = runMainDispatcherTest {
+        val londonOntario = london.copy(
+            name = "London",
+            country = "CA",
+            state = "Ontario",
+            lat = 42.9849,
+            lon = -81.2453,
+        )
+        val londonKentucky = london.copy(
+            name = "London",
+            country = "US",
+            state = "Kentucky",
+            lat = 37.1289,
+            lon = -84.0833,
+        )
+        citySearchRepository.result = AppResult.Success(
+            listOf(london, londonOntario, londonKentucky),
+        )
+        val viewModel = viewModel()
+
+        viewModel.uiState.test {
+            assertEquals(SearchUiState.Idle, awaitItem())
+            viewModel.onQueryChange("London")
+            assertEquals(SearchUiState.Loading, awaitItem())
+            val results = awaitItem()
+            assertIs<SearchUiState.Results>(results)
+            assertEquals(
+                listOf(london, londonOntario, londonKentucky),
+                results.locations,
+            )
+        }
+    }
+
+    @Test
+    fun givenAnAlreadySavedLocation_whenAdded_thenAlreadySavedEventIsEmitted() = runMainDispatcherTest {
+        savedLocationRepository.add(london)
+        val viewModel = viewModel()
+
+        viewModel.events.test {
+            viewModel.addLocation(london.copy(id = 99))
+            assertEquals(SearchEvent.AlreadySaved, awaitItem())
+        }
+
+        assertEquals(1, savedLocationRepository.observeAll().first().size)
+    }
 }
