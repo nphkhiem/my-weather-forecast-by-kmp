@@ -97,6 +97,7 @@ kotlin {
             implementation(libs.androidx.compose.ui.test.junit4)
             implementation(libs.androidx.testExt.junit)
             implementation(libs.androidx.espresso.core)
+            implementation(libs.androidx.navigation.testing)
         }
     }
 }
@@ -166,4 +167,3 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.kotlinx.coroutines.android)
 }
-
