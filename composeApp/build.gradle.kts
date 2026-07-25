@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.androidx.core.ktx)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.sqldelight.android.driver)
         }
@@ -97,6 +98,7 @@ kotlin {
             implementation(libs.androidx.compose.ui.test.junit4)
             implementation(libs.androidx.testExt.junit)
             implementation(libs.androidx.espresso.core)
+            implementation(libs.androidx.navigation.testing)
         }
     }
 }
@@ -166,4 +168,3 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     implementation(libs.kotlinx.coroutines.android)
 }
-

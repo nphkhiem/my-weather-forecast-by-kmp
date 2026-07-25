@@ -15,9 +15,10 @@ junit = "4.13.2"
 kotlin = "2.2.0"
 ktor = "3.2.1"
 koin = "4.1.0"
-koinComposeMultiPlatform = "1.2.0-Beta4"
+koinComposeMultiPlatform = "4.1.0"
 lifecycleViewModel = "2.9.1"
-navigationCompose = "2.8.0-alpha02"
+navigationCompose = "2.9.0"
+androidx-navigation-testing = "2.9.1"
 coroutines = "1.10.2"
 kotlinxDatetime = "0.6.0"
 kotlinxSerialization = "1.9.0"
@@ -71,6 +72,7 @@ koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
 koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koinComposeMultiPlatform" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koinComposeMultiPlatform" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "androidx-navigation-testing" }
 
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 multiplatform-settings-test = { module = "com.russhwolf:multiplatform-settings-test", version.ref = "multiplatformSettings" }
