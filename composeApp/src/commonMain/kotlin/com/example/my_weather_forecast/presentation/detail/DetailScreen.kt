@@ -1,22 +1,17 @@
 package com.example.my_weather_forecast.presentation.detail
 
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.my_weather_forecast.presentation.components.WeatherScreenFrame
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.palette
 import myweatherforecast.composeapp.generated.resources.Res
@@ -44,35 +39,28 @@ fun DetailScreen(
         ?.current
         ?.condition
         ?.palette(darkTheme = WeatherTheme.darkTheme)
-    val headerContainerColor = palette?.gradientStart ?: MaterialTheme.colorScheme.surface
     val headerContentColor = palette?.onGradient ?: MaterialTheme.colorScheme.onSurface
 
-    Scaffold(
+    WeatherScreenFrame(
+        title = uiState.screenTitle(),
         modifier = modifier,
-        containerColor = headerContainerColor,
-        // Detail draws its own edge-to-edge gradient; reserving a separate bottom/side inset
-        // here would leave a gap showing this solid containerColor instead of that gradient.
-        contentWindowInsets = WindowInsets(0),
-        topBar = {
-            TopAppBar(
-                title = { Text(uiState.screenTitle(), color = headerContentColor) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_back),
-                            contentDescription = stringResource(Res.string.back),
-                            tint = headerContentColor,
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+        contentMaxWidth = WeatherLayout.ReadingMaxWidth,
+        onNavigationClick = onBack,
+        navigationIcon = {
+            Icon(
+                painter = painterResource(Res.drawable.ic_back),
+                contentDescription = stringResource(Res.string.back),
             )
         },
-    ) { paddingValues ->
+        backgroundBrush = palette?.let {
+            Brush.verticalGradient(listOf(it.gradientStart, it.gradientEnd))
+        },
+        topBarContentColor = headerContentColor,
+    ) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = viewModel::refresh,
-            modifier = Modifier.padding(paddingValues).fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
         ) {
             DetailContent(uiState = uiState, modifier = Modifier.fillMaxSize())
         }
