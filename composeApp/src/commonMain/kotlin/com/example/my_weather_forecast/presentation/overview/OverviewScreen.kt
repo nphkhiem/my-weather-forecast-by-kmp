@@ -2,7 +2,6 @@ package com.example.my_weather_forecast.presentation.overview
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.SnackbarHost
@@ -18,10 +17,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.my_weather_forecast.presentation.components.WeatherScreenFrame
 import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import myweatherforecast.composeapp.generated.resources.Res
-import myweatherforecast.composeapp.generated.resources.add_area
 import myweatherforecast.composeapp.generated.resources.app_title
 import myweatherforecast.composeapp.generated.resources.area_removed
-import myweatherforecast.composeapp.generated.resources.ic_add
 import myweatherforecast.composeapp.generated.resources.ic_settings
 import myweatherforecast.composeapp.generated.resources.refresh_partial_failure
 import myweatherforecast.composeapp.generated.resources.settings
@@ -69,23 +66,21 @@ fun OverviewScreen(
         title = stringResource(Res.string.app_title),
         modifier = modifier,
         contentMaxWidth = WeatherLayout.OverviewMaxWidth,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { snackbarData ->
+                OverviewSnackbarContent(
+                    message = snackbarData.visuals.message,
+                    actionLabel = snackbarData.visuals.actionLabel,
+                    onAction = snackbarData::performAction,
+                )
+            }
+        },
         actions = {
             IconButton(onClick = onOpenSettings) {
                 Icon(
                     painter = painterResource(Res.drawable.ic_settings),
                     contentDescription = stringResource(Res.string.settings),
                 )
-            }
-        },
-        floatingActionButton = {
-            if (uiState !is OverviewUiState.Success) {
-                FloatingActionButton(onClick = onOpenSearch) {
-                    Icon(
-                        painter = painterResource(Res.drawable.ic_add),
-                        contentDescription = stringResource(Res.string.add_area),
-                    )
-                }
             }
         },
     ) {
@@ -99,6 +94,8 @@ fun OverviewScreen(
                 onAreaClick = viewModel::onAreaClick,
                 onRemove = viewModel::removeArea,
                 onAddArea = onOpenSearch,
+                onRefresh = viewModel::refresh,
+                isRefreshing = isRefreshing,
                 modifier = Modifier.fillMaxSize(),
             )
         }
