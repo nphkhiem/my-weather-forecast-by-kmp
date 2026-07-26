@@ -127,6 +127,31 @@ object DetailHeroTokens {
     const val BorderAlpha = 0.56f
 }
 
+object ForecastPanelTokens {
+    val Padding = WeatherSpacing.Xl
+    val HeaderGap = WeatherSpacing.Hairline
+    val HeaderBottomSpace = WeatherSpacing.Lg
+    val BorderWidth = 1.dp
+    val HourGap = WeatherSpacing.Sm
+    val HourMinWidth = 76.dp
+    val HourHorizontalPadding = WeatherSpacing.Sm
+    val HourVerticalPadding = WeatherSpacing.Md
+    val HourIconSize = 30.dp
+    val HourContentGap = WeatherSpacing.Xs
+    val EmptyVerticalPadding = WeatherSpacing.Sm
+    val DailyVerticalPadding = WeatherSpacing.Md
+    val DailyColumnGap = WeatherSpacing.Md
+    val DailyIconSize = 30.dp
+    val DailySupportingTopSpace = WeatherSpacing.Xs
+    val DailyStackedTopSpace = WeatherSpacing.Sm
+    val DailyCompactBreakpoint = 300.dp
+    const val DailyLargeFontScale = 1.5f
+    const val DailyLabelWeight = 1.1f
+    const val DailyTemperatureWeight = 0.85f
+    const val DailyRainWeight = 0.85f
+    const val BorderAlpha = 0.56f
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120

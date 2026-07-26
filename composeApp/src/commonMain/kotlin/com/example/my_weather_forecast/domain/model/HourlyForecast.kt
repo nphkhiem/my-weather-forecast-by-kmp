@@ -10,4 +10,11 @@ data class HourlyForecast(
     /** Probability of precipitation, 0.0..1.0. */
     val pop: Double,
     val windSpeed: Double,
+    val condition: WeatherCondition = WeatherCondition(
+        owmCode = 0,
+        group = "Unknown",
+        description = "unknown conditions",
+        icon = WeatherIcon.UNKNOWN,
+        isDaytime = true,
+    ),
 )

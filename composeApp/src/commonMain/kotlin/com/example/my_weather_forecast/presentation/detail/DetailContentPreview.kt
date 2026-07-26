@@ -34,11 +34,13 @@ private val previewForecast = Forecast(
         )
     },
     hourly = (0..11).map { hour ->
+        val hourlyIcon = WeatherIcon.entries[hour % WeatherIcon.entries.size]
         HourlyForecast(
             time = Instant.fromEpochMilliseconds(1704124800_000L + hour * 3_600_000L),
             temp = 20.0 + hour,
             pop = 0.05 * hour,
             windSpeed = 3.0,
+            condition = previewCondition(hourlyIcon, isDaytime = hour < 6),
         )
     },
     units = Units.METRIC,
