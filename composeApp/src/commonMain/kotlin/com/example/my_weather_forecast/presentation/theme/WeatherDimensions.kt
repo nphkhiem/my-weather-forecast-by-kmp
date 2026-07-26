@@ -101,6 +101,7 @@ object OverviewCardTokens {
 object OverviewStateTokens {
     val SurfaceMinHeight = 204.dp
     val SurfacePadding = WeatherSpacing.Xxl
+    val EmptyTopSpacerHeight = WeatherSpacing.Hero + WeatherSpacing.Xs
     val IndicatorContainerSize = 52.dp
     val IndicatorIconSize = 24.dp
     val ProgressSize = 22.dp

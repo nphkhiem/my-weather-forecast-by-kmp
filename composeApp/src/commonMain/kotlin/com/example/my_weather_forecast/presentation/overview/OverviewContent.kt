@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -25,6 +27,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.presentation.theme.OverviewCardTokens
+import com.example.my_weather_forecast.presentation.theme.OverviewStateTokens
 import com.example.my_weather_forecast.presentation.theme.WeatherRadii
 import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
@@ -113,6 +116,9 @@ private fun EmptyContent(
         areaCount = 0,
         modifier = modifier,
     ) {
+        item(key = "empty_state_spacing") {
+            Spacer(modifier = Modifier.height(OverviewStateTokens.EmptyTopSpacerHeight))
+        }
         item(key = "empty_state") {
             OverviewStateSurface(
                 title = stringResource(Res.string.overview_empty_title),

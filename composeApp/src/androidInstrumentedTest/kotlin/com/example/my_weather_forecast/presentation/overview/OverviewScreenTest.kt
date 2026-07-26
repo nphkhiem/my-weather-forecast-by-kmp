@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
@@ -31,6 +32,7 @@ import com.example.my_weather_forecast.testutil.sampleForecast
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -185,6 +187,26 @@ class OverviewScreenTest {
 
         assertEquals(true, searchOpened)
         composeTestRule.onAllNodesWithContentDescription("Add area").assertCountEquals(0)
+    }
+
+    @Test
+    fun givenNoSavedAreas_whenLaunched_thenEmptyStateReachesScreenCenter() {
+        setContent(
+            savedLocationRepository = FakeSavedLocationRepository(),
+            weatherRepository = FakeWeatherRepository(),
+        )
+
+        val screenCenterY = composeTestRule.onRoot().fetchSemanticsNode().boundsInRoot.center.y
+        val emptyStateBottom = composeTestRule
+            .onNodeWithTag(OVERVIEW_STATE_SURFACE_TEST_TAG)
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .bottom
+
+        assertTrue(
+            "Expected empty-state bottom $emptyStateBottom to reach screen center $screenCenterY",
+            emptyStateBottom >= screenCenterY,
+        )
     }
 
     @Test
