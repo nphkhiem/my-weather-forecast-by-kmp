@@ -4,9 +4,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.domain.model.WeatherIcon
+import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
+import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private val previewArea = AreaSummary(
@@ -21,22 +22,61 @@ private val previewArea = AreaSummary(
     stale = false,
 )
 
-@Preview
 @Composable
-private fun LocationSummaryCardLightPreview() {
-    WeatherForecastTheme(darkTheme = false) {
-        Surface {
-            LocationSummaryCard(area = previewArea, onClick = {}, onRemove = {}, modifier = Modifier.padding(16.dp))
+private fun LocationSummaryCardPreview(
+    area: AreaSummary,
+    darkTheme: Boolean,
+) {
+    WeatherPlatformBehaviorProvider {
+        WeatherForecastTheme(darkTheme = darkTheme) {
+            Surface {
+                LocationSummaryCard(
+                    area = area,
+                    onClick = {},
+                    onRemove = {},
+                    modifier = Modifier.padding(WeatherSpacing.Lg),
+                )
+            }
         }
     }
 }
 
 @Preview
 @Composable
+private fun LocationSummaryCardLightPreview() {
+    LocationSummaryCardPreview(area = previewArea, darkTheme = false)
+}
+
+@Preview
+@Composable
 private fun LocationSummaryCardDarkPreview() {
-    WeatherForecastTheme(darkTheme = true) {
-        Surface {
-            LocationSummaryCard(area = previewArea, onClick = {}, onRemove = {}, modifier = Modifier.padding(16.dp))
-        }
-    }
+    LocationSummaryCardPreview(area = previewArea, darkTheme = true)
+}
+
+@Preview
+@Composable
+private fun LocationSummaryCardLongStaleNightLightPreview() {
+    LocationSummaryCardPreview(
+        area = previewArea.copy(
+            name = "San Fernando del Valle de Catamarca",
+            icon = WeatherIcon.CLEAR,
+            isDaytime = false,
+            stale = true,
+        ),
+        darkTheme = false,
+    )
+}
+
+@Preview
+@Composable
+private fun LocationSummaryCardLongStaleNightDarkPreview() {
+    LocationSummaryCardPreview(
+        area = previewArea.copy(
+            name = "San Fernando del Valle de Catamarca",
+            icon = WeatherIcon.CLEAR,
+            isDaytime = false,
+            stale = true,
+        ),
+        darkTheme = true,
+    )
 }

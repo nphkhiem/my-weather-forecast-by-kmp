@@ -16,10 +16,18 @@
     <string name="theme_dark">Dark</string>
     <string name="undo">Undo</string>
     <string name="overview_empty">No saved areas yet. Tap + to add one.</string>
+    <string name="overview_places_title">Your places</string>
+    <string name="overview_places_hint">Forecasts at a glance</string>
+    <string name="overview_places_count">%1$d of %2$d</string>
+    <string name="overview_add_place">Add a place</string>
     <string name="area_removed">%1$s removed</string>
     <string name="refresh_partial_failure">Some areas could not be refreshed</string>
     <string name="delete_area">Delete %1$s</string>
     <string name="area_summary_line">H:%1$d°  L:%2$d°  %3$d% rain</string>
+    <string name="area_high">H %1$d°</string>
+    <string name="area_low">L %1$d°</string>
+    <string name="area_rain">%1$d% rain</string>
+    <string name="area_stale">Data may be out of date</string>
     <string name="area_accessibility">%1$s, %2$d degrees, high %3$d, low %4$d, %5$d percent chance of rain%6$s</string>
     <string name="area_accessibility_stale_suffix">, data may be out of date</string>
 

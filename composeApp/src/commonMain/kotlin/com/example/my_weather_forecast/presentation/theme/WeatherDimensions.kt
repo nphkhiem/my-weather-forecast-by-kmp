@@ -78,6 +78,26 @@ object SearchResultTokens {
     const val PressedScale = 0.995f
 }
 
+object OverviewCardTokens {
+    val MinHeight = 104.dp
+    val HorizontalPadding = WeatherSpacing.Lg
+    val VerticalPadding = WeatherSpacing.Md
+    val LeadingContainerSize = 46.dp
+    val WeatherIconSize = 36.dp
+    val LeadingGap = WeatherSpacing.Md
+    val TitleToConditionGap = WeatherSpacing.Hairline
+    val ConditionToMetricsGap = WeatherSpacing.Sm
+    val MetricGap = WeatherSpacing.Sm
+    val StaleGap = WeatherSpacing.Xs
+    val BorderWidth = 1.dp
+    val AddActionHeight = 52.dp
+    val AddActionIconSize = 20.dp
+    const val LightIconSurfaceAlpha = 0.32f
+    const val DarkIconSurfaceAlpha = 0.06f
+    const val BorderAlpha = 0.46f
+    const val PressedOverlayAlpha = 0.42f
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120
