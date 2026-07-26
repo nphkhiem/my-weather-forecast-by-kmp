@@ -1,6 +1,7 @@
 package com.example.my_weather_forecast.presentation.overview
 
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -10,6 +11,10 @@ import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.WeatherIcon
 import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
+import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
+import myweatherforecast.composeapp.generated.resources.Res
+import myweatherforecast.composeapp.generated.resources.refresh_partial_failure
+import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private fun previewArea(
@@ -61,16 +66,24 @@ private val sixAreas = listOf(
     ),
 )
 
+private val staleArea = listOf(oneArea.first().copy(stale = true))
+
 @Composable
 private fun OverviewContentPreview(
     uiState: OverviewUiState,
     darkTheme: Boolean,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier.width(390.dp).height(844.dp),
+    isRefreshing: Boolean = false,
 ) {
     WeatherPlatformBehaviorProvider {
         WeatherForecastTheme(darkTheme = darkTheme) {
             Surface(modifier = modifier) {
-                OverviewContent(uiState = uiState, onAreaClick = {}, onRemove = {})
+                OverviewContent(
+                    uiState = uiState,
+                    onAreaClick = {},
+                    onRemove = {},
+                    isRefreshing = isRefreshing,
+                )
             }
         }
     }
@@ -94,11 +107,47 @@ private fun OverviewEmptyDarkPreview() = OverviewContentPreview(OverviewUiState.
 
 @Preview
 @Composable
-private fun OverviewErrorLightPreview() = OverviewContentPreview(OverviewUiState.Error(WeatherError.Network), darkTheme = false)
+private fun OverviewErrorLightPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Error(WeatherError.Network),
+    darkTheme = false,
+)
 
 @Preview
 @Composable
-private fun OverviewErrorDarkPreview() = OverviewContentPreview(OverviewUiState.Error(WeatherError.Network), darkTheme = true)
+private fun OverviewErrorDarkPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Error(WeatherError.Network),
+    darkTheme = true,
+)
+
+@Preview
+@Composable
+private fun OverviewStaleCacheLightPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Success(staleArea),
+    darkTheme = false,
+)
+
+@Preview
+@Composable
+private fun OverviewStaleCacheDarkPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Success(staleArea),
+    darkTheme = true,
+)
+
+@Preview
+@Composable
+private fun OverviewRefreshingCacheLightPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Success(oneArea),
+    darkTheme = false,
+    isRefreshing = true,
+)
+
+@Preview
+@Composable
+private fun OverviewRefreshingCacheDarkPreview() = OverviewContentPreview(
+    uiState = OverviewUiState.Success(oneArea),
+    darkTheme = true,
+    isRefreshing = true,
+)
 
 @Preview
 @Composable
@@ -147,3 +196,28 @@ private fun OverviewSuccessSixAreasExpandedDarkPreview() = OverviewContentPrevie
     darkTheme = true,
     modifier = Modifier.width(900.dp).height(700.dp),
 )
+
+@Composable
+private fun OverviewPartialFailurePreview(darkTheme: Boolean) {
+    WeatherPlatformBehaviorProvider {
+        WeatherForecastTheme(darkTheme = darkTheme) {
+            Surface(
+                modifier = Modifier
+                    .width(390.dp)
+                    .padding(vertical = WeatherSpacing.Xxl),
+            ) {
+                OverviewSnackbarContent(
+                    message = stringResource(Res.string.refresh_partial_failure),
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun OverviewPartialFailureLightPreview() = OverviewPartialFailurePreview(darkTheme = false)
+
+@Preview
+@Composable
+private fun OverviewPartialFailureDarkPreview() = OverviewPartialFailurePreview(darkTheme = true)

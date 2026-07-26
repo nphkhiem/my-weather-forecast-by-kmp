@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -14,6 +15,8 @@ import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
+import com.example.my_weather_forecast.core.result.AppResult
+import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.ForecastObservation
 import com.example.my_weather_forecast.domain.model.Location
 import com.example.my_weather_forecast.domain.usecase.AddLocationUseCase
@@ -25,6 +28,7 @@ import com.example.my_weather_forecast.testutil.FakeSavedLocationRepository
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
 import com.example.my_weather_forecast.testutil.FakeWeatherRepository
 import com.example.my_weather_forecast.testutil.sampleForecast
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -39,24 +43,45 @@ class OverviewScreenTest {
         id = 1, name = "Chicago", country = "US", state = "IL", lat = 41.85, lon = -87.65, sortOrder = 0,
     )
 
-    private fun viewModel(savedLocationRepository: FakeSavedLocationRepository, weatherRepository: FakeWeatherRepository) =
-        OverviewViewModel(
-            observeSavedLocationsUseCase = ObserveSavedLocationsUseCase(savedLocationRepository),
-            removeLocationUseCase = RemoveLocationUseCase(savedLocationRepository),
-            addLocationUseCase = AddLocationUseCase(savedLocationRepository),
-            weatherRepository = weatherRepository,
-            unitsPreference = FakeUnitsPreference(),
-        )
+    private fun viewModel(
+        savedLocationRepository: FakeSavedLocationRepository,
+        weatherRepository: FakeWeatherRepository,
+    ) = OverviewViewModel(
+        observeSavedLocationsUseCase = ObserveSavedLocationsUseCase(savedLocationRepository),
+        removeLocationUseCase = RemoveLocationUseCase(savedLocationRepository),
+        addLocationUseCase = AddLocationUseCase(savedLocationRepository),
+        weatherRepository = weatherRepository,
+        unitsPreference = FakeUnitsPreference(),
+    )
 
     private fun setContentWithArea(
         onOpenSearch: () -> Unit = {},
         onOpenDetail: (Long) -> Unit = {},
+        stale: Boolean = false,
     ): Pair<FakeSavedLocationRepository, FakeWeatherRepository> {
         val savedLocationRepository = FakeSavedLocationRepository()
         val weatherRepository = FakeWeatherRepository()
         runBlocking { savedLocationRepository.add(chicago) }
-        weatherRepository.setObservation(chicago.id, ForecastObservation.Success(sampleForecast(chicago), stale = false))
+        weatherRepository.setObservation(
+            chicago.id,
+            ForecastObservation.Success(sampleForecast(chicago), stale = stale),
+        )
 
+        setContent(
+            savedLocationRepository = savedLocationRepository,
+            weatherRepository = weatherRepository,
+            onOpenSearch = onOpenSearch,
+            onOpenDetail = onOpenDetail,
+        )
+        return savedLocationRepository to weatherRepository
+    }
+
+    private fun setContent(
+        savedLocationRepository: FakeSavedLocationRepository,
+        weatherRepository: FakeWeatherRepository,
+        onOpenSearch: () -> Unit = {},
+        onOpenDetail: (Long) -> Unit = {},
+    ) {
         composeTestRule.setContent {
             WeatherPlatformBehaviorProvider {
                 WeatherForecastTheme {
@@ -69,7 +94,6 @@ class OverviewScreenTest {
                 }
             }
         }
-        return savedLocationRepository to weatherRepository
     }
 
     @Test
@@ -145,22 +169,101 @@ class OverviewScreenTest {
     }
 
     @Test
-    fun givenNoSavedAreas_whenLaunched_thenEmptyStateShowsAddCityCta() {
-        composeTestRule.setContent {
-            WeatherPlatformBehaviorProvider {
-                WeatherForecastTheme {
-                    OverviewScreen(
-                        onOpenSearch = {},
-                        onOpenSettings = {},
-                        onOpenDetail = {},
-                        viewModel = viewModel(FakeSavedLocationRepository(), FakeWeatherRepository()),
-                    )
-                }
-            }
-        }
+    fun givenNoSavedAreas_whenLaunched_thenEmptyStateShowsAddPlaceAction() {
+        var searchOpened = false
+        setContent(
+            savedLocationRepository = FakeSavedLocationRepository(),
+            weatherRepository = FakeWeatherRepository(),
+            onOpenSearch = { searchOpened = true },
+        )
 
-        composeTestRule.onNodeWithText("No saved areas yet. Tap + to add one.").assertIsDisplayed()
-        composeTestRule.onNodeWithContentDescription("Add area").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Your weather starts here").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("Save a place to see its forecast at a glance.")
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Add a place").assertIsDisplayed().performClick()
+
+        assertEquals(true, searchOpened)
+        composeTestRule.onAllNodesWithContentDescription("Add area").assertCountEquals(0)
+    }
+
+    @Test
+    fun givenSavedAreasStillLoading_whenLaunched_thenReservedLoadingStateIsShown() {
+        val savedLocationRepository = FakeSavedLocationRepository()
+        runBlocking { savedLocationRepository.add(chicago) }
+
+        setContent(savedLocationRepository, FakeWeatherRepository())
+
+        composeTestRule.onNodeWithText("Checking your places").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Loading the latest forecasts.").assertIsDisplayed()
+        composeTestRule.onAllNodesWithText("Chicago", substring = true).assertCountEquals(0)
+    }
+
+    @Test
+    fun givenNoCachedForecast_whenLoadingFails_thenRetryAndAddRemainAvailable() {
+        var searchOpened = false
+        val savedLocationRepository = FakeSavedLocationRepository()
+        val weatherRepository = FakeWeatherRepository()
+        runBlocking { savedLocationRepository.add(chicago) }
+        weatherRepository.setObservation(chicago.id, ForecastObservation.Error(WeatherError.Network))
+        setContent(
+            savedLocationRepository = savedLocationRepository,
+            weatherRepository = weatherRepository,
+            onOpenSearch = { searchOpened = true },
+        )
+
+        composeTestRule.onNodeWithText("Forecasts are unavailable").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No internet connection. Try again.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Try again").performClick()
+        composeTestRule.waitForIdle()
+        composeTestRule.onNodeWithText("Add a place").performClick()
+
+        assertEquals(1, weatherRepository.refreshCallCount)
+        assertEquals(true, searchOpened)
+    }
+
+    @Test
+    fun givenCachedForecast_whenRefreshIsInProgress_thenContentStaysVisibleWithStatus() {
+        val (_, weatherRepository) = setContentWithArea()
+        val refreshGate = CompletableDeferred<Unit>()
+        weatherRepository.refreshGate = refreshGate
+
+        composeTestRule.onNodeWithTag(OVERVIEW_CONTENT_TEST_TAG)
+            .performTouchInput { swipeDown(startY = 0f, endY = bottom) }
+
+        composeTestRule.onNodeWithText("Updating forecasts").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Chicago", substring = true, useUnmergedTree = true).assertIsDisplayed()
+
+        refreshGate.complete(Unit)
+        composeTestRule.waitForIdle()
+    }
+
+    @Test
+    fun givenCachedForecast_whenRefreshPartiallyFails_thenContentStaysVisibleWithFeedback() {
+        val (_, weatherRepository) = setContentWithArea()
+        weatherRepository.refreshResult = AppResult.Failure(WeatherError.Network)
+
+        composeTestRule.onNodeWithTag(OVERVIEW_CONTENT_TEST_TAG)
+            .performTouchInput { swipeDown(startY = 0f, endY = bottom) }
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("overview_snackbar").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("Some forecasts could not be updated. Showing available information.")
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithText("Chicago", substring = true, useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun givenCachedForecastIsStale_whenRendered_thenForecastRemainsVisibleWithFreshnessContext() {
+        setContentWithArea(stale = true)
+
+        composeTestRule.onNodeWithText("Data may be out of date", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule
+            .onNodeWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain, data may be out of date",
+            )
+            .assertIsDisplayed()
     }
 
     @Test

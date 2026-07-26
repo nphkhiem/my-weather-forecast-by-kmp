@@ -98,6 +98,20 @@ object OverviewCardTokens {
     const val PressedOverlayAlpha = 0.42f
 }
 
+object OverviewStateTokens {
+    val SurfaceMinHeight = 204.dp
+    val SurfacePadding = WeatherSpacing.Xxl
+    val IndicatorContainerSize = 52.dp
+    val IndicatorIconSize = 24.dp
+    val ProgressSize = 22.dp
+    val ProgressStrokeWidth = 2.dp
+    val ActionHeight = WeatherLayout.MinimumTouchTarget
+    val InlineStatusHeight = 32.dp
+    val InlineProgressSize = 14.dp
+    val InlineProgressStrokeWidth = 2.dp
+    val BorderWidth = 1.dp
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120
