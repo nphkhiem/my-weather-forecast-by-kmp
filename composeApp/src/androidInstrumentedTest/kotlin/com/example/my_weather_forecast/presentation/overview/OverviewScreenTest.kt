@@ -16,6 +16,7 @@ import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.AppResult
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.ForecastObservation
@@ -23,6 +24,7 @@ import com.example.my_weather_forecast.domain.model.Location
 import com.example.my_weather_forecast.domain.usecase.AddLocationUseCase
 import com.example.my_weather_forecast.domain.usecase.ObserveSavedLocationsUseCase
 import com.example.my_weather_forecast.domain.usecase.RemoveLocationUseCase
+import com.example.my_weather_forecast.presentation.components.WEATHER_SCREEN_CONTENT_TEST_TAG
 import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
 import com.example.my_weather_forecast.testutil.FakeSavedLocationRepository
@@ -206,6 +208,31 @@ class OverviewScreenTest {
         assertTrue(
             "Expected empty-state bottom $emptyStateBottom to reach screen center $screenCenterY",
             emptyStateBottom >= screenCenterY,
+        )
+    }
+
+    @Test
+    fun givenOverview_whenRendered_thenPlacesSectionHasComfortableTopInset() {
+        setContent(
+            savedLocationRepository = FakeSavedLocationRepository(),
+            weatherRepository = FakeWeatherRepository(),
+        )
+
+        val contentTop = composeTestRule
+            .onNodeWithTag(WEATHER_SCREEN_CONTENT_TEST_TAG)
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .top
+        val placesTop = composeTestRule
+            .onNodeWithText("Your places")
+            .fetchSemanticsNode()
+            .boundsInRoot
+            .top
+        val minimumInset = with(composeTestRule.density) { 12.dp.toPx() }
+
+        assertTrue(
+            "Expected places section inset ${placesTop - contentTop} to be at least $minimumInset",
+            placesTop - contentTop >= minimumInset,
         )
     }
 

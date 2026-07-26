@@ -205,7 +205,7 @@ private fun OverviewCollection(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
             start = WeatherSpacing.Lg,
-            top = WeatherSpacing.Sm,
+            top = WeatherSpacing.Md,
             end = WeatherSpacing.Lg,
             bottom = WeatherSpacing.Xxl,
         ),
