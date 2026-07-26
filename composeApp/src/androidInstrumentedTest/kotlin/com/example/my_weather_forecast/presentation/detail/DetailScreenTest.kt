@@ -40,11 +40,11 @@ class DetailScreenTest {
             unitsPreference = FakeUnitsPreference(),
         )
 
-    private fun setContentWithArea(): FakeWeatherRepository {
+    private fun setContentWithArea(stale: Boolean = false): FakeWeatherRepository {
         val savedLocationRepository = FakeSavedLocationRepository()
         val weatherRepository = FakeWeatherRepository()
         runBlocking { savedLocationRepository.add(chicago) }
-        weatherRepository.setObservation(chicago.id, ForecastObservation.Success(sampleForecast(chicago), stale = false))
+        weatherRepository.setObservation(chicago.id, ForecastObservation.Success(sampleForecast(chicago), stale = stale))
 
         composeTestRule.setContent {
             WeatherPlatformBehaviorProvider {
@@ -66,6 +66,25 @@ class DetailScreenTest {
 
         composeTestRule.onNodeWithText("Chicago").assertIsDisplayed()
         composeTestRule.onNodeWithText("Mon", substring = false).assertIsDisplayed()
+    }
+
+    @Test
+    fun givenAResolvedForecast_whenHeroRenders_thenConditionAndMetricHierarchyIsVisible() {
+        setContentWithArea()
+
+        composeTestRule.onNodeWithText("Clouds", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Humidity", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Wind", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Rain", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun givenAStaleForecast_whenHeroRenders_thenMergedSummaryCommunicatesStaleness() {
+        setContentWithArea(stale = true)
+
+        composeTestRule
+            .onNodeWithContentDescription("Data may be out of date", substring = true)
+            .assertIsDisplayed()
     }
 
     @Test

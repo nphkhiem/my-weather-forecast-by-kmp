@@ -67,7 +67,11 @@
     <string name="stale_suffix">  ·  Data may be out of date</string>
     <string name="temp_degrees">%1$d°</string>
     <string name="feels_like">Feels like %1$d°</string>
-    <string name="current_summary_line">Humidity %1$d%  ·  Wind %2$d %3$s  ·  %4$d% rain</string>
+    <string name="current_humidity_label">Humidity</string>
+    <string name="current_wind_label">Wind</string>
+    <string name="current_rain_label">Rain</string>
+    <string name="current_percent_value">%1$d%</string>
+    <string name="current_wind_value">%1$d %2$s</string>
     <string name="current_accessibility">%1$s, %2$d degrees, feels like %3$d degrees, %4$d percent humidity, wind %5$d %6$s, %7$d percent chance of rain</string>
     <string name="daily_temp_range">%1$d° / %2$d°</string>
     <string name="daily_summary_line">%1$d% rain  ·  Wind %2$d %3$s  ·  Humidity %4$d%</string>

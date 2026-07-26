@@ -1,17 +1,25 @@
 package com.example.my_weather_forecast.presentation.detail
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -19,13 +27,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
 import com.example.my_weather_forecast.domain.model.Units
 import com.example.my_weather_forecast.presentation.theme.AnimatedWeatherIcon
+import com.example.my_weather_forecast.presentation.theme.DetailHeroTokens
+import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.palette
 import com.example.my_weather_forecast.presentation.theme.readableName
@@ -36,7 +47,11 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.todayIn
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.current_accessibility
-import myweatherforecast.composeapp.generated.resources.current_summary_line
+import myweatherforecast.composeapp.generated.resources.current_humidity_label
+import myweatherforecast.composeapp.generated.resources.current_percent_value
+import myweatherforecast.composeapp.generated.resources.current_rain_label
+import myweatherforecast.composeapp.generated.resources.current_wind_label
+import myweatherforecast.composeapp.generated.resources.current_wind_value
 import myweatherforecast.composeapp.generated.resources.error_generic_pull_refresh
 import myweatherforecast.composeapp.generated.resources.error_network_pull_refresh
 import myweatherforecast.composeapp.generated.resources.error_not_found_weather
@@ -99,8 +114,12 @@ private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Mo
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         CompositionLocalProvider(LocalContentColor provides palette.onGradient) {
-            UpdatedBanner(state.lastUpdated, state.stale)
-            CurrentConditionsHeader(state.forecast.current, state.forecast.units)
+            CurrentConditionsHero(
+                current = state.forecast.current,
+                units = state.forecast.units,
+                lastUpdated = state.lastUpdated,
+                stale = state.stale,
+            )
             Column {
                 HourlyRainStrip(state.forecast.hourly.todayOnly(today))
                 state.forecast.daily.forEachIndexed { index, daily ->
@@ -112,14 +131,15 @@ private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Mo
 }
 
 @Composable
-private fun UpdatedBanner(lastUpdated: Instant, stale: Boolean, modifier: Modifier = Modifier) {
-    val label = stringResource(Res.string.updated_at, lastUpdated.toClockLabel()) +
-        if (stale) stringResource(Res.string.stale_suffix) else ""
-    Text(text = label, style = MaterialTheme.typography.labelMedium, modifier = modifier.fillMaxWidth())
-}
-
-@Composable
-private fun CurrentConditionsHeader(current: CurrentConditions, units: Units, modifier: Modifier = Modifier) {
+private fun CurrentConditionsHero(
+    current: CurrentConditions,
+    units: Units,
+    lastUpdated: Instant,
+    stale: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val colors = WeatherTheme.colors
+    val palette = current.condition.palette(darkTheme = WeatherTheme.darkTheme)
     val conditionName = current.condition.icon.readableName()
     val windUnitLabel = stringResource(units.windSpeedUnitLabelRes())
     val temp = current.temp.roundToInt()
@@ -130,23 +150,167 @@ private fun CurrentConditionsHeader(current: CurrentConditions, units: Units, mo
         Res.string.current_accessibility,
         conditionName, temp, feelsLike, current.humidity, windSpeed, windUnitLabel, popPercent,
     )
+    val freshnessLabel = stringResource(Res.string.updated_at, lastUpdated.toClockLabel()) +
+        if (stale) stringResource(Res.string.stale_suffix) else ""
 
-    Column(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .semantics(mergeDescendants = true) { contentDescription = accessibilityDescription },
+            .clearAndSetSemantics {
+                contentDescription = "$accessibilityDescription. $freshnessLabel"
+            },
+        shape = MaterialTheme.shapes.extraLarge,
+        color = colors.weatherSurface,
+        contentColor = colors.textPrimary,
+        border = BorderStroke(
+            DetailHeroTokens.BorderWidth,
+            colors.border.copy(alpha = DetailHeroTokens.BorderAlpha),
+        ),
     ) {
-        AnimatedWeatherIcon(
-            icon = current.condition.icon,
-            isDaytime = current.condition.isDaytime,
-            contentDescription = null,
-            modifier = Modifier.size(56.dp),
+        Column(modifier = Modifier.padding(DetailHeroTokens.Padding)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(DetailHeroTokens.TopLineGap),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FreshnessStatus(
+                    label = freshnessLabel,
+                    stale = stale,
+                    modifier = Modifier.weight(1f),
+                )
+                Text(
+                    text = conditionName,
+                    color = palette.accent,
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = DetailHeroTokens.MainMinHeight),
+                horizontalArrangement = Arrangement.spacedBy(DetailHeroTokens.MainGap),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(Res.string.temp_degrees, temp),
+                        style = MaterialTheme.typography.displayMedium,
+                    )
+                    Text(
+                        text = stringResource(Res.string.feels_like, feelsLike),
+                        color = colors.textSecondary,
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+                AnimatedWeatherIcon(
+                    icon = current.condition.icon,
+                    isDaytime = current.condition.isDaytime,
+                    contentDescription = null,
+                    modifier = Modifier.size(DetailHeroTokens.IconSize),
+                )
+            }
+
+            CurrentMetricRow(
+                humidity = current.humidity,
+                windSpeed = windSpeed,
+                windUnitLabel = windUnitLabel,
+                rainPercent = popPercent,
+            )
+        }
+    }
+}
+
+@Composable
+private fun FreshnessStatus(label: String, stale: Boolean, modifier: Modifier = Modifier) {
+    val colors = WeatherTheme.colors
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(WeatherSpacing.Sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(DetailHeroTokens.StatusDotSize)
+                .background(
+                    color = if (stale) colors.warning else colors.success,
+                    shape = MaterialTheme.shapes.extraSmall,
+                ),
         )
-        Text(stringResource(Res.string.temp_degrees, temp), style = MaterialTheme.typography.displayMedium)
-        Text(stringResource(Res.string.feels_like, feelsLike), style = MaterialTheme.typography.bodyLarge)
         Text(
-            stringResource(Res.string.current_summary_line, current.humidity, windSpeed, windUnitLabel, popPercent),
-            style = MaterialTheme.typography.bodyMedium,
+            text = label,
+            color = colors.textSecondary,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+@Composable
+private fun CurrentMetricRow(
+    humidity: Int,
+    windSpeed: Int,
+    windUnitLabel: String,
+    rainPercent: Int,
+    modifier: Modifier = Modifier,
+) {
+    val colors = WeatherTheme.colors
+    Column(modifier = modifier.fillMaxWidth()) {
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(DetailHeroTokens.MetricDividerWidth)
+                .background(colors.divider),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = DetailHeroTokens.MetricTopPadding),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CurrentMetric(
+                label = stringResource(Res.string.current_humidity_label),
+                value = stringResource(Res.string.current_percent_value, humidity),
+                modifier = Modifier.weight(1f),
+            )
+            MetricDivider()
+            CurrentMetric(
+                label = stringResource(Res.string.current_wind_label),
+                value = stringResource(Res.string.current_wind_value, windSpeed, windUnitLabel),
+                modifier = Modifier.weight(1f),
+            )
+            MetricDivider()
+            CurrentMetric(
+                label = stringResource(Res.string.current_rain_label),
+                value = stringResource(Res.string.current_percent_value, rainPercent),
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CurrentMetric(label: String, value: String, modifier: Modifier = Modifier) {
+    val colors = WeatherTheme.colors
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(WeatherSpacing.Hairline),
+    ) {
+        Text(text = label, color = colors.textTertiary, style = MaterialTheme.typography.labelSmall)
+        Text(text = value, style = MaterialTheme.typography.labelMedium)
+    }
+}
+
+@Composable
+private fun MetricDivider(modifier: Modifier = Modifier) {
+    Spacer(
+        modifier = modifier
+            .width(DetailHeroTokens.MetricDividerWidth)
+            .height(DetailHeroTokens.MetricDividerHeight)
+            .background(WeatherTheme.colors.divider),
+    )
 }
