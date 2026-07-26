@@ -1,10 +1,16 @@
 package com.example.my_weather_forecast.presentation.overview
 
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
@@ -42,7 +48,10 @@ class OverviewScreenTest {
             unitsPreference = FakeUnitsPreference(),
         )
 
-    private fun setContentWithArea(): Pair<FakeSavedLocationRepository, FakeWeatherRepository> {
+    private fun setContentWithArea(
+        onOpenSearch: () -> Unit = {},
+        onOpenDetail: (Long) -> Unit = {},
+    ): Pair<FakeSavedLocationRepository, FakeWeatherRepository> {
         val savedLocationRepository = FakeSavedLocationRepository()
         val weatherRepository = FakeWeatherRepository()
         runBlocking { savedLocationRepository.add(chicago) }
@@ -52,9 +61,9 @@ class OverviewScreenTest {
             WeatherPlatformBehaviorProvider {
                 WeatherForecastTheme {
                     OverviewScreen(
-                        onOpenSearch = {},
+                        onOpenSearch = onOpenSearch,
                         onOpenSettings = {},
-                        onOpenDetail = {},
+                        onOpenDetail = onOpenDetail,
                         viewModel = viewModel(savedLocationRepository, weatherRepository),
                     )
                 }
@@ -68,6 +77,71 @@ class OverviewScreenTest {
         setContentWithArea()
 
         composeTestRule.onNodeWithText("Chicago", substring = true, useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("Your places").assertIsDisplayed()
+        composeTestRule.onNodeWithText("1 of 6").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Add a place").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Clouds", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("H 24°", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("L 15°", useUnmergedTree = true).assertIsDisplayed()
+        composeTestRule.onNodeWithText("20% rain", useUnmergedTree = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun givenSavedArea_whenCardClicked_thenDetailOpens() {
+        var openedLocationId: Long? = null
+        setContentWithArea(onOpenDetail = { openedLocationId = it })
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain",
+            )
+            .performClick()
+        composeTestRule.waitForIdle()
+
+        assertEquals(chicago.id, openedLocationId)
+    }
+
+    @Test
+    fun givenSavedAreas_whenAddPlaceClicked_thenSearchOpens() {
+        var searchOpened = false
+        setContentWithArea(onOpenSearch = { searchOpened = true })
+
+        composeTestRule.onNodeWithText("Add a place").performClick()
+
+        assertEquals(true, searchOpened)
+    }
+
+    @Test
+    fun givenSavedArea_whenRendered_thenCardIsOneMergedActionWithDecorativeIcon() {
+        setContentWithArea()
+
+        composeTestRule
+            .onAllNodesWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain",
+            )
+            .assertCountEquals(1)
+        composeTestRule
+            .onNodeWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain",
+            )
+            .assertHasClickAction()
+        composeTestRule.onAllNodesWithContentDescription("Clouds").assertCountEquals(0)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun givenSavedArea_whenAccessibilityDeleteRuns_thenAreaIsRemoved() {
+        setContentWithArea()
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain",
+            )
+            .performCustomAccessibilityActionWithLabel("Delete Chicago")
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithText("Chicago removed").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Undo").assertIsDisplayed()
     }
 
     @Test
@@ -109,6 +183,13 @@ class OverviewScreenTest {
         composeTestRule.waitForIdle()
 
         composeTestRule.onNodeWithText("Chicago removed").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Undo").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Undo").assertIsDisplayed().performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule
+            .onNodeWithContentDescription(
+                "Chicago, 21 degrees, high 24, low 15, 20 percent chance of rain",
+            )
+            .assertIsDisplayed()
     }
 }

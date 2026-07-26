@@ -79,11 +79,13 @@ fun OverviewScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onOpenSearch) {
-                Icon(
-                    painter = painterResource(Res.drawable.ic_add),
-                    contentDescription = stringResource(Res.string.add_area),
-                )
+            if (uiState !is OverviewUiState.Success) {
+                FloatingActionButton(onClick = onOpenSearch) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_add),
+                        contentDescription = stringResource(Res.string.add_area),
+                    )
+                }
             }
         },
     ) {
@@ -96,6 +98,7 @@ fun OverviewScreen(
                 uiState = uiState,
                 onAreaClick = viewModel::onAreaClick,
                 onRemove = viewModel::removeArea,
+                onAddArea = onOpenSearch,
                 modifier = Modifier.fillMaxSize(),
             )
         }
