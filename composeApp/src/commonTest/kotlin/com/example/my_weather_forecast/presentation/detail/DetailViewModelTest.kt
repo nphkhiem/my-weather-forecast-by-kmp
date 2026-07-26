@@ -1,6 +1,7 @@
 package com.example.my_weather_forecast.presentation.detail
 
 import app.cash.turbine.test
+import com.example.my_weather_forecast.core.result.AppResult
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.ForecastObservation
 import com.example.my_weather_forecast.domain.model.Location
@@ -16,6 +17,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 class DetailViewModelTest {
 
@@ -66,6 +68,28 @@ class DetailViewModelTest {
             assertIs<DetailUiState.Success>(success)
             assertEquals(true, success.stale)
             assertEquals(forecast.fetchedAt, success.lastUpdated)
+        }
+    }
+
+    @Test
+    fun givenARefreshFailureWithCache_whenObserved_thenSuccessRetainsTheFailureContext() = testDetail { viewModel ->
+        savedLocationRepository.add(chicago)
+        val forecast = sampleForecast(chicago)
+        weatherRepository.setObservation(
+            chicago.id,
+            ForecastObservation.Success(
+                forecast = forecast,
+                stale = true,
+                error = WeatherError.Network,
+            ),
+        )
+
+        viewModel.uiState.test {
+            assertEquals(DetailUiState.Loading, awaitItem())
+            val success = awaitItem()
+            assertIs<DetailUiState.Success>(success)
+            assertEquals(forecast, success.forecast)
+            assertEquals(WeatherError.Network, success.refreshError)
         }
     }
 
@@ -128,5 +152,53 @@ class DetailViewModelTest {
         }
 
         assertEquals(1, weatherRepository.refreshCallCount)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun givenCachedSuccess_whenManualRefreshFails_thenCachedForecastRemainsWithFailureContext() = testDetail { viewModel ->
+        savedLocationRepository.add(chicago)
+        val forecast = sampleForecast(chicago)
+        weatherRepository.setObservation(chicago.id, ForecastObservation.Success(forecast, stale = false))
+        weatherRepository.refreshResult = AppResult.Failure(WeatherError.Network)
+
+        viewModel.uiState.test {
+            assertEquals(DetailUiState.Loading, awaitItem())
+            assertEquals(forecast, (awaitItem() as DetailUiState.Success).forecast)
+
+            viewModel.refresh()
+            advanceUntilIdle()
+
+            val afterFailure = awaitItem()
+            assertIs<DetailUiState.Success>(afterFailure)
+            assertEquals(forecast, afterFailure.forecast)
+            assertEquals(WeatherError.Network, afterFailure.refreshError)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun givenManualRefreshFailure_whenFreshForecastArrives_thenFailureContextClears() = testDetail { viewModel ->
+        savedLocationRepository.add(chicago)
+        val cached = sampleForecast(chicago)
+        weatherRepository.setObservation(chicago.id, ForecastObservation.Success(cached, stale = false))
+        weatherRepository.refreshResult = AppResult.Failure(WeatherError.Network)
+
+        viewModel.uiState.test {
+            assertEquals(DetailUiState.Loading, awaitItem())
+            awaitItem()
+
+            viewModel.refresh()
+            advanceUntilIdle()
+            assertEquals(WeatherError.Network, (awaitItem() as DetailUiState.Success).refreshError)
+
+            val fresh = sampleForecast(chicago, fetchedAtEpochMillis = 1704124860_000L)
+            weatherRepository.setObservation(chicago.id, ForecastObservation.Success(fresh, stale = false))
+
+            val recovered = awaitItem()
+            assertIs<DetailUiState.Success>(recovered)
+            assertEquals(fresh, recovered.forecast)
+            assertNull(recovered.refreshError)
+        }
     }
 }

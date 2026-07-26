@@ -81,7 +81,12 @@ internal fun DetailScreenContent(
             onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize(),
         ) {
-            DetailContent(uiState = uiState, modifier = Modifier.fillMaxSize())
+            DetailContent(
+                uiState = uiState,
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }
