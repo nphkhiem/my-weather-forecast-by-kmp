@@ -8,6 +8,7 @@ import com.example.my_weather_forecast.domain.model.Units
 import com.example.my_weather_forecast.domain.model.WeatherIcon
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,6 +54,17 @@ class WeatherMappersTest {
         assertEquals(72, current.humidity)
         assertEquals(3.6, current.windSpeed)
         assertEquals(803, current.condition.owmCode)
+    }
+
+    @Test
+    fun givenAnHourlyCondition_whenMappedThenSerialized_thenConditionRemainsInTheCachedPayload() {
+        val hourly = response.hourly.first().toDomain()
+
+        val payload = json.encodeToString(hourly)
+
+        assertTrue("\"condition\"" in payload)
+        assertTrue("\"owmCode\":500" in payload)
+        assertTrue("\"icon\":\"RAIN\"" in payload)
     }
 
     @Test

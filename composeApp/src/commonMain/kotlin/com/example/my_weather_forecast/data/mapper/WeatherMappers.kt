@@ -54,6 +54,7 @@ fun HourlyDto.toDomain(): HourlyForecast = HourlyForecast(
     temp = temp,
     pop = pop,
     windSpeed = windSpeed,
+    condition = weather.first().toDomain(),
 )
 
 fun DailyDto.toDomain(timezoneOffsetSeconds: Int): DailyForecast = DailyForecast(

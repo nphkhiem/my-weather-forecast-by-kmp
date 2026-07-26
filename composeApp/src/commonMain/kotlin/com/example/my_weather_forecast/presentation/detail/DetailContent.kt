@@ -23,7 +23,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -103,7 +102,6 @@ private fun WeatherError.toMessage(): String = when (this) {
 @Composable
 private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Modifier) {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
-    val dateLabels = remember(state.forecast.daily) { state.forecast.daily.map { it.date }.dailyDateLabels() }
     val palette = state.forecast.current.condition.palette(darkTheme = WeatherTheme.darkTheme)
 
     Column(
@@ -120,12 +118,12 @@ private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Mo
                 lastUpdated = state.lastUpdated,
                 stale = state.stale,
             )
-            Column {
-                HourlyRainStrip(state.forecast.hourly.todayOnly(today))
-                state.forecast.daily.forEachIndexed { index, daily ->
-                    DailyRow(daily = daily, today = today, dateLabel = dateLabels[index], units = state.forecast.units)
-                }
-            }
+            HourlyRainStrip(state.forecast.hourly.todayOnly(today))
+            DailyForecastPanel(
+                daily = state.forecast.daily,
+                today = today,
+                units = state.forecast.units,
+            )
         }
     }
 }
