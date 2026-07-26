@@ -113,6 +113,20 @@ object OverviewStateTokens {
     val BorderWidth = 1.dp
 }
 
+object DetailHeroTokens {
+    val Padding = WeatherSpacing.Xl
+    val TopLineGap = WeatherSpacing.Sm
+    val MainMinHeight = 124.dp
+    val IconSize = 96.dp
+    val MainGap = WeatherSpacing.Lg
+    val MetricTopPadding = WeatherSpacing.Md
+    val MetricDividerHeight = 36.dp
+    val MetricDividerWidth = 1.dp
+    val BorderWidth = 1.dp
+    val StatusDotSize = 6.dp
+    const val BorderAlpha = 0.56f
+}
+
 object WeatherMotion {
     const val InstantMillis = 50
     const val PressMillis = 120

@@ -1,6 +1,5 @@
 package com.example.my_weather_forecast.presentation.detail
 
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
@@ -18,7 +17,7 @@ import org.jetbrains.compose.ui.tooling.preview.Preview
 
 private val chicago = Location(id = 1, name = "Chicago", country = "US", state = "IL", lat = 41.85, lon = -87.65, sortOrder = 0)
 
-private val clearSky = WeatherCondition(owmCode = 800, group = "Clear", description = "clear sky", icon = WeatherIcon.CLEAR, isDaytime = true)
+private val clearSky = previewCondition(WeatherIcon.CLEAR, isDaytime = true)
 
 private val previewForecast = Forecast(
     location = chicago,
@@ -47,54 +46,136 @@ private val previewForecast = Forecast(
 )
 
 @Composable
-private fun DetailContentPreview(uiState: DetailUiState, darkTheme: Boolean) {
+private fun DetailScreenPreview(uiState: DetailUiState, darkTheme: Boolean) {
     WeatherForecastTheme(darkTheme = darkTheme) {
-        Surface {
-            DetailContent(uiState = uiState)
-        }
+        DetailScreenContent(
+            uiState = uiState,
+            isRefreshing = false,
+            onRefresh = {},
+            onBack = {},
+        )
     }
+}
+
+private fun previewCondition(icon: WeatherIcon, isDaytime: Boolean = true) = WeatherCondition(
+    owmCode = 800,
+    group = icon.name,
+    description = icon.name.lowercase(),
+    icon = icon,
+    isDaytime = isDaytime,
+)
+
+private fun previewState(
+    icon: WeatherIcon = WeatherIcon.CLEAR,
+    isDaytime: Boolean = true,
+    stale: Boolean = false,
+    location: Location = chicago,
+): DetailUiState.Success {
+    val forecast = previewForecast.copy(
+        location = location,
+        current = previewForecast.current.copy(
+            condition = previewCondition(icon = icon, isDaytime = isDaytime),
+        ),
+    )
+    return DetailUiState.Success(
+        forecast = forecast,
+        stale = stale,
+        lastUpdated = forecast.fetchedAt,
+    )
 }
 
 @Preview
 @Composable
-private fun DetailLoadingLightPreview() = DetailContentPreview(DetailUiState.Loading, darkTheme = false)
+private fun DetailLoadingLightPreview() = DetailScreenPreview(DetailUiState.Loading, darkTheme = false)
 
 @Preview
 @Composable
-private fun DetailLoadingDarkPreview() = DetailContentPreview(DetailUiState.Loading, darkTheme = true)
+private fun DetailLoadingDarkPreview() = DetailScreenPreview(DetailUiState.Loading, darkTheme = true)
 
 @Preview
 @Composable
-private fun DetailErrorLightPreview() = DetailContentPreview(DetailUiState.Error(WeatherError.Network), darkTheme = false)
+private fun DetailErrorLightPreview() = DetailScreenPreview(DetailUiState.Error(WeatherError.Network), darkTheme = false)
 
 @Preview
 @Composable
-private fun DetailErrorDarkPreview() = DetailContentPreview(DetailUiState.Error(WeatherError.Network), darkTheme = true)
+private fun DetailErrorDarkPreview() = DetailScreenPreview(DetailUiState.Error(WeatherError.Network), darkTheme = true)
 
 @Preview
 @Composable
-private fun DetailSuccessFreshLightPreview() = DetailContentPreview(
-    DetailUiState.Success(previewForecast, stale = false, lastUpdated = previewForecast.fetchedAt),
+private fun DetailClearDayFreshLightPreview() = DetailScreenPreview(previewState(), darkTheme = false)
+
+@Preview
+@Composable
+private fun DetailClearDayFreshDarkPreview() = DetailScreenPreview(previewState(), darkTheme = true)
+
+@Preview
+@Composable
+private fun DetailClearNightLightPreview() = DetailScreenPreview(
+    previewState(isDaytime = false),
     darkTheme = false,
 )
 
 @Preview
 @Composable
-private fun DetailSuccessFreshDarkPreview() = DetailContentPreview(
-    DetailUiState.Success(previewForecast, stale = false, lastUpdated = previewForecast.fetchedAt),
+private fun DetailClearNightDarkPreview() = DetailScreenPreview(
+    previewState(isDaytime = false),
     darkTheme = true,
 )
 
 @Preview
 @Composable
-private fun DetailSuccessStaleLightPreview() = DetailContentPreview(
-    DetailUiState.Success(previewForecast, stale = true, lastUpdated = previewForecast.fetchedAt),
+private fun DetailCloudsPreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.CLOUDS),
     darkTheme = false,
 )
 
 @Preview
 @Composable
-private fun DetailSuccessStaleDarkPreview() = DetailContentPreview(
-    DetailUiState.Success(previewForecast, stale = true, lastUpdated = previewForecast.fetchedAt),
+private fun DetailRainStalePreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.RAIN, stale = true),
+    darkTheme = false,
+)
+
+@Preview
+@Composable
+private fun DetailDrizzlePreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.DRIZZLE),
     darkTheme = true,
+)
+
+@Preview
+@Composable
+private fun DetailThunderstormPreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.THUNDERSTORM, isDaytime = false),
+    darkTheme = true,
+)
+
+@Preview
+@Composable
+private fun DetailSnowPreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.SNOW),
+    darkTheme = false,
+)
+
+@Preview
+@Composable
+private fun DetailAtmospherePreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.ATMOSPHERE),
+    darkTheme = false,
+)
+
+@Preview
+@Composable
+private fun DetailUnknownPreview() = DetailScreenPreview(
+    previewState(icon = WeatherIcon.UNKNOWN, isDaytime = false),
+    darkTheme = true,
+)
+
+@Preview
+@Composable
+private fun DetailLongLocationPreview() = DetailScreenPreview(
+    previewState(
+        location = chicago.copy(name = "Thành phố Hồ Chí Minh Metropolitan Area"),
+    ),
+    darkTheme = false,
 )

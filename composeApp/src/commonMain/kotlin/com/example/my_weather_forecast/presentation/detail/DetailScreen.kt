@@ -34,6 +34,25 @@ fun DetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+
+    DetailScreenContent(
+        uiState = uiState,
+        isRefreshing = isRefreshing,
+        onRefresh = viewModel::refresh,
+        onBack = onBack,
+        modifier = modifier,
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+internal fun DetailScreenContent(
+    uiState: DetailUiState,
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     val palette = (uiState as? DetailUiState.Success)
         ?.forecast
         ?.current
@@ -59,7 +78,7 @@ fun DetailScreen(
     ) {
         PullToRefreshBox(
             isRefreshing = isRefreshing,
-            onRefresh = viewModel::refresh,
+            onRefresh = onRefresh,
             modifier = Modifier.fillMaxSize(),
         ) {
             DetailContent(uiState = uiState, modifier = Modifier.fillMaxSize())
