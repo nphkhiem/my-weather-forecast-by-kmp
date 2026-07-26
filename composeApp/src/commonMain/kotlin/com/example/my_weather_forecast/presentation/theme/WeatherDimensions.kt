@@ -143,6 +143,37 @@ object DetailStateTokens {
     val BorderWidth = 1.dp
 }
 
+object SettingsTokens {
+    val ContentPadding = WeatherSpacing.Lg
+    val ContentGap = WeatherSpacing.Xl
+    val IntroGap = WeatherSpacing.Xs
+    val SectionPadding = WeatherSpacing.Xl
+    val SectionHeaderGap = WeatherSpacing.Hairline
+    val SectionContentGap = WeatherSpacing.Lg
+    val ThemeOptionGap = WeatherSpacing.Sm
+    val ThemeOptionMinHeight = 120.dp
+    val ThemeOptionPadding = WeatherSpacing.Sm
+    val ThemePreviewHeight = 58.dp
+    val ThemePreviewPadding = WeatherSpacing.Xs
+    val ThemePreviewLineHeight = 5.dp
+    val ThemeLabelGap = WeatherSpacing.Sm
+    val SelectionMarkSize = 20.dp
+    val SelectionMarkIconSize = 12.dp
+    val SegmentContainerPadding = WeatherSpacing.Xs
+    val SegmentGap = WeatherSpacing.Xs
+    val SegmentMinHeight = 52.dp
+    val SegmentHorizontalPadding = WeatherSpacing.Md
+    val SegmentLabelGap = WeatherSpacing.Sm
+    val SystemNotePadding = WeatherSpacing.Lg
+    val SystemNoteGap = WeatherSpacing.Md
+    val SystemNoteTextGap = WeatherSpacing.Hairline
+    val SystemNoteIconContainerSize = 36.dp
+    val SystemNoteIconSize = 20.dp
+    val BorderWidth = 1.dp
+    val SelectedBorderWidth = 2.dp
+    val FocusedBorderWidth = 3.dp
+}
+
 object ForecastPanelTokens {
     val Padding = WeatherSpacing.Xl
     val HeaderGap = WeatherSpacing.Hairline

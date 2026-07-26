@@ -1,5 +1,7 @@
 package com.example.my_weather_forecast.presentation.theme
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -31,13 +33,30 @@ fun WeatherForecastTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
-    val weatherColors = if (darkTheme) WeatherColorSchemes.Dark else WeatherColorSchemes.Light
+    val darkThemeProgress by animateFloatAsState(
+        targetValue = if (darkTheme) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = WeatherMotion.FastMillis,
+            easing = WeatherMotion.StandardEasing,
+        ),
+        label = "weather theme crossfade",
+    )
+    val weatherColors = lerpWeatherColors(
+        start = WeatherColorSchemes.Light,
+        stop = WeatherColorSchemes.Dark,
+        fraction = darkThemeProgress,
+    )
+    val materialColors = lerpColorSchemes(
+        start = weatherColorScheme(darkTheme = false),
+        stop = weatherColorScheme(darkTheme = true),
+        fraction = darkThemeProgress,
+    )
     CompositionLocalProvider(
         LocalWeatherColors provides weatherColors,
         LocalWeatherDarkTheme provides darkTheme,
     ) {
         MaterialTheme(
-            colorScheme = weatherColorScheme(darkTheme),
+            colorScheme = materialColors,
             typography = WeatherMaterialTypography,
             shapes = WeatherShapes,
             content = content,
