@@ -124,7 +124,23 @@ object DetailHeroTokens {
     val MetricDividerWidth = 1.dp
     val BorderWidth = 1.dp
     val StatusDotSize = 6.dp
+    val StatusProgressSize = 12.dp
+    val StatusProgressStrokeWidth = 1.5.dp
     const val BorderAlpha = 0.56f
+}
+
+object DetailStateTokens {
+    val HeroMinHeight = 204.dp
+    val HourlyPlaceholderHeight = 176.dp
+    val DailyPlaceholderHeight = 248.dp
+    val SurfacePadding = WeatherSpacing.Xxl
+    val IndicatorContainerSize = 52.dp
+    val IndicatorIconSize = 24.dp
+    val ProgressSize = 22.dp
+    val ProgressStrokeWidth = 2.dp
+    val PlaceholderLineHeight = 12.dp
+    val ActionHeight = WeatherLayout.MinimumTouchTarget
+    val BorderWidth = 1.dp
 }
 
 object ForecastPanelTokens {

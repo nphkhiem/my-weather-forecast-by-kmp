@@ -48,11 +48,15 @@ private val previewForecast = Forecast(
 )
 
 @Composable
-private fun DetailScreenPreview(uiState: DetailUiState, darkTheme: Boolean) {
+private fun DetailScreenPreview(
+    uiState: DetailUiState,
+    darkTheme: Boolean,
+    isRefreshing: Boolean = false,
+) {
     WeatherForecastTheme(darkTheme = darkTheme) {
         DetailScreenContent(
             uiState = uiState,
-            isRefreshing = false,
+            isRefreshing = isRefreshing,
             onRefresh = {},
             onBack = {},
         )
@@ -101,6 +105,36 @@ private fun DetailErrorLightPreview() = DetailScreenPreview(DetailUiState.Error(
 @Preview
 @Composable
 private fun DetailErrorDarkPreview() = DetailScreenPreview(DetailUiState.Error(WeatherError.Network), darkTheme = true)
+
+@Preview
+@Composable
+private fun DetailRefreshingLightPreview() = DetailScreenPreview(
+    uiState = previewState(),
+    darkTheme = false,
+    isRefreshing = true,
+)
+
+@Preview
+@Composable
+private fun DetailRefreshingDarkPreview() = DetailScreenPreview(
+    uiState = previewState(),
+    darkTheme = true,
+    isRefreshing = true,
+)
+
+@Preview
+@Composable
+private fun DetailCachedOfflineLightPreview() = DetailScreenPreview(
+    uiState = previewState(stale = true).copy(refreshError = WeatherError.Network),
+    darkTheme = false,
+)
+
+@Preview
+@Composable
+private fun DetailCachedOfflineDarkPreview() = DetailScreenPreview(
+    uiState = previewState(stale = true).copy(refreshError = WeatherError.Network),
+    darkTheme = true,
+)
 
 @Preview
 @Composable

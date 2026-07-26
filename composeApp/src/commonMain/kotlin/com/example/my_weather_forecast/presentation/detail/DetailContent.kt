@@ -26,8 +26,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.WeatherError
@@ -51,8 +53,17 @@ import myweatherforecast.composeapp.generated.resources.current_percent_value
 import myweatherforecast.composeapp.generated.resources.current_rain_label
 import myweatherforecast.composeapp.generated.resources.current_wind_label
 import myweatherforecast.composeapp.generated.resources.current_wind_value
+import myweatherforecast.composeapp.generated.resources.detail_cached_delayed
+import myweatherforecast.composeapp.generated.resources.detail_cached_offline
+import myweatherforecast.composeapp.generated.resources.detail_cached_service_issue
+import myweatherforecast.composeapp.generated.resources.detail_cached_update_failed
+import myweatherforecast.composeapp.generated.resources.detail_error_title
+import myweatherforecast.composeapp.generated.resources.detail_loading_message
+import myweatherforecast.composeapp.generated.resources.detail_loading_title
+import myweatherforecast.composeapp.generated.resources.detail_refreshing
+import myweatherforecast.composeapp.generated.resources.detail_retry
 import myweatherforecast.composeapp.generated.resources.error_generic_pull_refresh
-import myweatherforecast.composeapp.generated.resources.error_network_pull_refresh
+import myweatherforecast.composeapp.generated.resources.error_network_try_again
 import myweatherforecast.composeapp.generated.resources.error_not_found_weather
 import myweatherforecast.composeapp.generated.resources.error_rate_limited
 import myweatherforecast.composeapp.generated.resources.error_unauthorized_weather
@@ -60,47 +71,66 @@ import myweatherforecast.composeapp.generated.resources.feels_like
 import myweatherforecast.composeapp.generated.resources.stale_suffix
 import myweatherforecast.composeapp.generated.resources.temp_degrees
 import myweatherforecast.composeapp.generated.resources.updated_at
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 const val DETAIL_CONTENT_TEST_TAG = "detail_content"
+private const val CURRENT_CONDITIONS_HERO_TEST_TAG = "current_conditions_hero"
 
 @Composable
-fun DetailContent(uiState: DetailUiState, modifier: Modifier = Modifier) {
+fun DetailContent(
+    uiState: DetailUiState,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    isRefreshing: Boolean = false,
+) {
     val taggedModifier = modifier.testTag(DETAIL_CONTENT_TEST_TAG)
     when (uiState) {
         is DetailUiState.Loading -> LoadingContent(taggedModifier)
-        is DetailUiState.Error -> ErrorContent(uiState.error, taggedModifier)
-        is DetailUiState.Success -> SuccessContent(uiState, taggedModifier)
+        is DetailUiState.Error -> ErrorContent(
+            error = uiState.error,
+            onRefresh = onRefresh,
+            modifier = taggedModifier,
+        )
+        is DetailUiState.Success -> SuccessContent(
+            state = uiState,
+            isRefreshing = isRefreshing,
+            modifier = taggedModifier,
+        )
     }
 }
 
 @Composable
 private fun LoadingContent(modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-    }
+    DetailLoadingSurface(
+        title = stringResource(Res.string.detail_loading_title),
+        message = stringResource(Res.string.detail_loading_message),
+        modifier = modifier,
+    )
 }
 
 @Composable
-private fun ErrorContent(error: WeatherError, modifier: Modifier = Modifier) {
-    val message = error.toMessage()
-    Box(modifier = modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
-        Text(text = message, style = MaterialTheme.typography.bodyLarge)
-    }
-}
+private fun ErrorContent(
+    error: WeatherError,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+) = DetailErrorSurface(
+    title = stringResource(Res.string.detail_error_title),
+    message = error.toMessage(),
+    retryLabel = if (error == WeatherError.NotFound) null else stringResource(Res.string.detail_retry),
+    onRetry = onRefresh,
+    modifier = modifier,
+)
 
 @Composable
-private fun WeatherError.toMessage(): String = when (this) {
-    WeatherError.Network -> stringResource(Res.string.error_network_pull_refresh)
-    WeatherError.RateLimited -> stringResource(Res.string.error_rate_limited)
-    WeatherError.Unauthorized -> stringResource(Res.string.error_unauthorized_weather)
-    WeatherError.NotFound -> stringResource(Res.string.error_not_found_weather)
-    WeatherError.AtLimit, WeatherError.AlreadySaved, is WeatherError.Unknown ->
-        stringResource(Res.string.error_generic_pull_refresh)
-}
+private fun WeatherError.toMessage(): String = stringResource(detailMessages().fatal)
 
 @Composable
-private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Modifier) {
+private fun SuccessContent(
+    state: DetailUiState.Success,
+    isRefreshing: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val palette = state.forecast.current.condition.palette(darkTheme = WeatherTheme.darkTheme)
 
@@ -115,8 +145,7 @@ private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Mo
             CurrentConditionsHero(
                 current = state.forecast.current,
                 units = state.forecast.units,
-                lastUpdated = state.lastUpdated,
-                stale = state.stale,
+                updateStatus = state.updateStatus(isRefreshing),
             )
             HourlyRainStrip(state.forecast.hourly.todayOnly(today))
             DailyForecastPanel(
@@ -132,8 +161,7 @@ private fun SuccessContent(state: DetailUiState.Success, modifier: Modifier = Mo
 private fun CurrentConditionsHero(
     current: CurrentConditions,
     units: Units,
-    lastUpdated: Instant,
-    stale: Boolean,
+    updateStatus: DetailUpdateStatus,
     modifier: Modifier = Modifier,
 ) {
     val colors = WeatherTheme.colors
@@ -148,14 +176,15 @@ private fun CurrentConditionsHero(
         Res.string.current_accessibility,
         conditionName, temp, feelsLike, current.humidity, windSpeed, windUnitLabel, popPercent,
     )
-    val freshnessLabel = stringResource(Res.string.updated_at, lastUpdated.toClockLabel()) +
-        if (stale) stringResource(Res.string.stale_suffix) else ""
+    val freshnessLabel = updateStatus.label()
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
+            .testTag(CURRENT_CONDITIONS_HERO_TEST_TAG)
             .clearAndSetSemantics {
                 contentDescription = "$accessibilityDescription. $freshnessLabel"
+                liveRegion = LiveRegionMode.Polite
             },
         shape = MaterialTheme.shapes.extraLarge,
         color = colors.weatherSurface,
@@ -173,7 +202,8 @@ private fun CurrentConditionsHero(
             ) {
                 FreshnessStatus(
                     label = freshnessLabel,
-                    stale = stale,
+                    warning = updateStatus.isWarning,
+                    isRefreshing = updateStatus is DetailUpdateStatus.Refreshing,
                     modifier = Modifier.weight(1f),
                 )
                 Text(
@@ -222,21 +252,34 @@ private fun CurrentConditionsHero(
 }
 
 @Composable
-private fun FreshnessStatus(label: String, stale: Boolean, modifier: Modifier = Modifier) {
+private fun FreshnessStatus(
+    label: String,
+    warning: Boolean,
+    isRefreshing: Boolean,
+    modifier: Modifier = Modifier,
+) {
     val colors = WeatherTheme.colors
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(WeatherSpacing.Sm),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            modifier = Modifier
-                .size(DetailHeroTokens.StatusDotSize)
-                .background(
-                    color = if (stale) colors.warning else colors.success,
-                    shape = MaterialTheme.shapes.extraSmall,
-                ),
-        )
+        if (isRefreshing) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(DetailHeroTokens.StatusProgressSize),
+                color = colors.accent,
+                strokeWidth = DetailHeroTokens.StatusProgressStrokeWidth,
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(DetailHeroTokens.StatusDotSize)
+                    .background(
+                        color = if (warning) colors.warning else colors.success,
+                        shape = MaterialTheme.shapes.extraSmall,
+                    ),
+            )
+        }
         Text(
             text = label,
             color = colors.textSecondary,
@@ -245,6 +288,61 @@ private fun FreshnessStatus(label: String, stale: Boolean, modifier: Modifier = 
             overflow = TextOverflow.Ellipsis,
         )
     }
+}
+
+private sealed interface DetailUpdateStatus {
+    data class Current(val lastUpdated: Instant) : DetailUpdateStatus
+    data class Stale(val lastUpdated: Instant) : DetailUpdateStatus
+    data object Refreshing : DetailUpdateStatus
+    data class RefreshFailed(val error: WeatherError) : DetailUpdateStatus
+}
+
+private val DetailUpdateStatus.isWarning: Boolean
+    get() = this is DetailUpdateStatus.Stale || this is DetailUpdateStatus.RefreshFailed
+
+private fun DetailUiState.Success.updateStatus(isRefreshing: Boolean): DetailUpdateStatus = when {
+    isRefreshing -> DetailUpdateStatus.Refreshing
+    refreshError != null -> DetailUpdateStatus.RefreshFailed(refreshError)
+    stale -> DetailUpdateStatus.Stale(lastUpdated)
+    else -> DetailUpdateStatus.Current(lastUpdated)
+}
+
+@Composable
+private fun DetailUpdateStatus.label(): String = when (this) {
+    is DetailUpdateStatus.Current -> stringResource(Res.string.updated_at, lastUpdated.toClockLabel())
+    is DetailUpdateStatus.Stale ->
+        stringResource(Res.string.updated_at, lastUpdated.toClockLabel()) +
+            stringResource(Res.string.stale_suffix)
+    DetailUpdateStatus.Refreshing -> stringResource(Res.string.detail_refreshing)
+    is DetailUpdateStatus.RefreshFailed -> stringResource(error.detailMessages().cached)
+}
+
+private data class DetailErrorMessages(
+    val fatal: StringResource,
+    val cached: StringResource,
+)
+
+private fun WeatherError.detailMessages(): DetailErrorMessages = when (this) {
+    WeatherError.Network -> DetailErrorMessages(
+        fatal = Res.string.error_network_try_again,
+        cached = Res.string.detail_cached_offline,
+    )
+    WeatherError.RateLimited -> DetailErrorMessages(
+        fatal = Res.string.error_rate_limited,
+        cached = Res.string.detail_cached_delayed,
+    )
+    WeatherError.Unauthorized -> DetailErrorMessages(
+        fatal = Res.string.error_unauthorized_weather,
+        cached = Res.string.detail_cached_service_issue,
+    )
+    WeatherError.NotFound -> DetailErrorMessages(
+        fatal = Res.string.error_not_found_weather,
+        cached = Res.string.detail_cached_update_failed,
+    )
+    WeatherError.AtLimit, WeatherError.AlreadySaved, is WeatherError.Unknown -> DetailErrorMessages(
+        fatal = Res.string.error_generic_pull_refresh,
+        cached = Res.string.detail_cached_update_failed,
+    )
 }
 
 @Composable

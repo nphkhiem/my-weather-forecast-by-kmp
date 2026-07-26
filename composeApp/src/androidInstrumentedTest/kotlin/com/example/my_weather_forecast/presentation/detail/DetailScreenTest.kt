@@ -4,8 +4,13 @@ import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -269,6 +274,70 @@ class DetailScreenTest {
     }
 
     @Test
+    fun givenCachedForecast_whenRefreshIsActive_thenForecastStaysVisibleWithUpdatingStatus() {
+        val forecast = sampleForecast(chicago)
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreenContent(
+                        uiState = DetailUiState.Success(
+                            forecast = forecast,
+                            stale = false,
+                            lastUpdated = forecast.fetchedAt,
+                        ),
+                        isRefreshing = true,
+                        onRefresh = {},
+                        onBack = {},
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Today by hour").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Daily outlook").assertExists()
+        composeTestRule.onNode(
+            hasTestTag("current_conditions_hero") and
+                hasContentDescription("Updating forecast", substring = true),
+        )
+            .assertIsDisplayed()
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.LiveRegion,
+                    LiveRegionMode.Polite,
+                ),
+            )
+    }
+
+    @Test
+    fun givenCachedForecast_whenRefreshFails_thenForecastStaysVisibleWithFailureContext() {
+        val forecast = sampleForecast(chicago)
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreenContent(
+                        uiState = DetailUiState.Success(
+                            forecast = forecast,
+                            stale = true,
+                            lastUpdated = forecast.fetchedAt,
+                            refreshError = WeatherError.Network,
+                        ),
+                        isRefreshing = false,
+                        onRefresh = {},
+                        onBack = {},
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Today by hour").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Daily outlook").assertExists()
+        composeTestRule.onNode(
+            hasTestTag("current_conditions_hero") and
+                hasContentDescription("Offline · Showing saved forecast", substring = true),
+        ).assertIsDisplayed()
+    }
+
+    @Test
     fun givenTheBackButton_whenTapped_thenOnBackIsInvoked() {
         val savedLocationRepository = FakeSavedLocationRepository()
         val weatherRepository = FakeWeatherRepository()
@@ -312,6 +381,53 @@ class DetailScreenTest {
         }
 
         composeTestRule.onNodeWithText("Could not find weather data for this area.").assertIsDisplayed()
+    }
+
+    @Test
+    fun givenNoCacheAndNetworkFailure_whenFatalStateRenders_thenRetryIsAvailable() {
+        var retryInvoked = false
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreenContent(
+                        uiState = DetailUiState.Error(WeatherError.Network),
+                        isRefreshing = false,
+                        onRefresh = { retryInvoked = true },
+                        onBack = {},
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Forecast unavailable").assertIsDisplayed()
+        composeTestRule.onNodeWithText("No internet connection. Try again.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Try again").performClick()
+
+        assertTrue(retryInvoked)
+    }
+
+    @Test
+    fun givenNoCacheWhileForecastLoads_whenLoadingStateRenders_thenItUsesTheFocusedSurface() {
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    DetailScreenContent(
+                        uiState = DetailUiState.Loading,
+                        isRefreshing = false,
+                        onRefresh = {},
+                        onBack = {},
+                    )
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithText("Preparing your forecast").assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("Loading current conditions and outlook.")
+            .assertIsDisplayed()
+        composeTestRule.onNodeWithTag("detail_loading_hero").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("detail_loading_hourly").assertExists()
+        composeTestRule.onNodeWithTag("detail_loading_daily").assertExists()
     }
 
     @Test

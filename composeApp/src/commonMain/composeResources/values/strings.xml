@@ -63,6 +63,15 @@
     <string name="location_result_accessibility">%1$s, %2$s</string>
 
     <string name="forecast_title">Forecast</string>
+    <string name="detail_loading_title">Preparing your forecast</string>
+    <string name="detail_loading_message">Loading current conditions and outlook.</string>
+    <string name="detail_error_title">Forecast unavailable</string>
+    <string name="detail_retry">Try again</string>
+    <string name="detail_refreshing">Updating forecast</string>
+    <string name="detail_cached_offline">Offline · Showing saved forecast</string>
+    <string name="detail_cached_delayed">Update delayed · Showing saved forecast</string>
+    <string name="detail_cached_service_issue">Service issue · Showing saved forecast</string>
+    <string name="detail_cached_update_failed">Couldn’t update · Showing saved forecast</string>
     <string name="updated_at">Updated %1$s</string>
     <string name="stale_suffix">  ·  Data may be out of date</string>
     <string name="temp_degrees">%1$d°</string>

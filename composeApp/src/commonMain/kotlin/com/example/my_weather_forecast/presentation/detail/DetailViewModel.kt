@@ -3,6 +3,7 @@ package com.example.my_weather_forecast.presentation.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.my_weather_forecast.core.preference.UnitsPreference
+import com.example.my_weather_forecast.core.result.AppResult
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.ForecastObservation
 import com.example.my_weather_forecast.domain.model.Location
@@ -34,14 +35,33 @@ class DetailViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _manualRefreshError = MutableStateFlow<WeatherError?>(null)
+
     @OptIn(ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<DetailUiState> = combine(
+    private val forecastState = combine(
         savedLocationRepository.observeAll()
             .map { locations -> locations.find { it.id == locationId } }
             .onEach { latestLocation = it },
         unitsPreference.units,
     ) { location, units -> location to units }
+        .onEach { _manualRefreshError.value = null }
         .flatMapLatest { (location, units) -> observeForecast(location, units) }
+        .onEach { state ->
+            if (state is DetailUiState.Success && state.refreshError == null) {
+                _manualRefreshError.value = null
+            }
+        }
+
+    val uiState: StateFlow<DetailUiState> = combine(
+        forecastState,
+        _manualRefreshError,
+    ) { state, manualRefreshError ->
+        if (state is DetailUiState.Success && manualRefreshError != null) {
+            state.copy(refreshError = manualRefreshError)
+        } else {
+            state
+        }
+    }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), DetailUiState.Loading)
 
     private fun observeForecast(location: Location?, units: Units) =
@@ -53,16 +73,25 @@ class DetailViewModel(
 
     private fun ForecastObservation.toUiState(): DetailUiState = when (this) {
         ForecastObservation.Loading -> DetailUiState.Loading
-        is ForecastObservation.Success -> DetailUiState.Success(forecast, stale, forecast.fetchedAt)
+        is ForecastObservation.Success -> DetailUiState.Success(forecast, stale, forecast.fetchedAt, error)
         is ForecastObservation.Error -> DetailUiState.Error(error)
     }
 
     fun refresh() {
         val location = latestLocation ?: return
+        val units = unitsPreference.units.value
         viewModelScope.launch {
+            _manualRefreshError.value = null
             _isRefreshing.value = true
             try {
-                weatherRepository.refresh(location, unitsPreference.units.value)
+                when (val result = weatherRepository.refresh(location, units)) {
+                    is AppResult.Success -> Unit
+                    is AppResult.Failure -> {
+                        if (latestLocation?.id == location.id && unitsPreference.units.value == units) {
+                            _manualRefreshError.value = result.error
+                        }
+                    }
+                }
             } finally {
                 _isRefreshing.value = false
             }
