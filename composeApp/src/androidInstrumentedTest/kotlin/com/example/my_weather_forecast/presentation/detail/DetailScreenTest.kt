@@ -258,7 +258,7 @@ class DetailScreenTest {
             .onNodeWithTag(DAILY_FORECAST_PANEL_TEST_TAG)
             .fetchSemanticsNode()
             .boundsInRoot
-        listOf("H 31°", "L 22°", "100% rain", "Wind 2 m/s  ·  Humidity 60%").forEach { label ->
+        listOf("H 31°", "L 22°", "100% rain", "Wind 2 m/s", "Humidity 60%").forEach { label ->
             val readingBounds = composeTestRule
                 .onNodeWithText(label, useUnmergedTree = true)
                 .fetchSemanticsNode()
@@ -525,6 +525,61 @@ class DetailScreenTest {
                         )
                     }
                 }
+            }
+        }
+    }
+
+
+    @Test
+    fun givenADailyRow_whenRendered_thenWindAndHumiditySitOnSeparateLines() {
+        setDailyPanel()
+
+        val wind = textBounds("Wind 2 m/s")
+        val humidity = textBounds("Humidity 60%")
+
+        assertTrue(
+            "Wind bottom ${wind.bottom} must sit above humidity top ${humidity.top}",
+            wind.bottom <= humidity.top,
+        )
+    }
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheDateIsCentredUnderItsDayLabel() {
+        setDailyPanel()
+
+        val day = textBounds("Today")
+        val date = textBounds("26/07")
+
+        assertEquals(
+            "Date centre ${date.center.x} must line up with day centre ${day.center.x}",
+            day.center.x,
+            date.center.x,
+            1f,
+        )
+    }
+
+    private fun textBounds(text: String) = composeTestRule
+        .onNodeWithText(text, useUnmergedTree = true)
+        .fetchSemanticsNode()
+        .boundsInRoot
+
+    private fun setDailyPanel() {
+        val today = LocalDate(2026, 7, 26)
+        val condition = WeatherCondition(
+            owmCode = 500,
+            group = "Rain",
+            description = "light rain",
+            icon = WeatherIcon.RAIN,
+            isDaytime = true,
+        )
+        composeTestRule.setContent {
+            WeatherForecastTheme {
+                DailyForecastPanel(
+                    daily = listOf(DailyForecast(today, 22.0, 31.0, 60, 2.0, 0.0, condition)),
+                    today = today,
+                    units = Units.METRIC,
+                    modifier = Modifier.requiredWidth(390.dp),
+                )
             }
         }
     }

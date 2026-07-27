@@ -38,7 +38,8 @@ import myweatherforecast.composeapp.generated.resources.area_high
 import myweatherforecast.composeapp.generated.resources.area_low
 import myweatherforecast.composeapp.generated.resources.area_rain
 import myweatherforecast.composeapp.generated.resources.daily_accessibility
-import myweatherforecast.composeapp.generated.resources.daily_supporting_line
+import myweatherforecast.composeapp.generated.resources.daily_humidity_line
+import myweatherforecast.composeapp.generated.resources.daily_wind_line
 import myweatherforecast.composeapp.generated.resources.day_fri
 import myweatherforecast.composeapp.generated.resources.day_mon
 import myweatherforecast.composeapp.generated.resources.day_sat
@@ -144,15 +145,26 @@ fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: U
                 )
             }
         }
-        Text(
-            text = stringResource(Res.string.daily_supporting_line, windSpeed, windUnitLabel, daily.humidity),
-            color = colors.textTertiary,
-            style = WeatherTypography.Caption,
-            textAlign = TextAlign.End,
+        // Wind and humidity each take their own line so their right edges align across rows,
+        // instead of one combined line whose left edge shifts with the values.
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = ForecastPanelTokens.DailySupportingTopSpace),
-        )
+        ) {
+            listOf(
+                stringResource(Res.string.daily_wind_line, windSpeed, windUnitLabel),
+                stringResource(Res.string.daily_humidity_line, daily.humidity),
+            ).forEach { supportingLine ->
+                Text(
+                    text = supportingLine,
+                    color = colors.textTertiary,
+                    style = WeatherTypography.Caption,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
     }
 }
 
@@ -229,16 +241,20 @@ private fun DailyStackedReading(
 private fun DailyDateLabel(dayLabel: String, dateLabel: String, modifier: Modifier = Modifier) {
     val colors = WeatherTheme.colors
     Column(modifier = modifier) {
-        Text(
-            text = dayLabel,
-            color = colors.textPrimary,
-            style = WeatherTypography.ItemTitle,
-        )
-        Text(
-            text = dateLabel,
-            color = colors.textSecondary,
-            style = WeatherTypography.Micro,
-        )
+        // The inner column wraps to the wider of the two labels, so the date centres under the day
+        // name while the pair stays left aligned inside its track.
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = dayLabel,
+                color = colors.textPrimary,
+                style = WeatherTypography.ItemTitle,
+            )
+            Text(
+                text = dateLabel,
+                color = colors.textSecondary,
+                style = WeatherTypography.Micro,
+            )
+        }
     }
 }
 
