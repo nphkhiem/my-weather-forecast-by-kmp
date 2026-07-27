@@ -80,10 +80,11 @@ class SettingsScreenTest {
     }
 
     @Test
-    fun givenDefaultPreferences_whenSelectorsRender_thenActiveOptionsExposeRadioSelection() {
+    fun givenDefaultPreferences_whenSelectorsRender_thenSelectionUsesBordersAndRadioSemantics() {
         setContent()
 
-        composeTestRule.onNodeWithTag("theme_option_SYSTEM")
+        val selectedTheme = composeTestRule.onNodeWithTag("theme_option_SYSTEM")
+        selectedTheme
             .assertIsSelected()
             .assert(
                 SemanticsMatcher.expectValue(
@@ -101,8 +102,15 @@ class SettingsScreenTest {
                 ),
             )
         composeTestRule.onNodeWithTag("units_option_IMPERIAL").assertIsNotSelected()
-        composeTestRule.onNodeWithTag("units_selection_mark_METRIC", useUnmergedTree = true).assertExists()
+        val selectedThemeBounds = selectedTheme.fetchSemanticsNode().boundsInRoot
+        val selectedThemeLabelBounds = composeTestRule
+            .onNodeWithText("System", useUnmergedTree = true)
+            .fetchSemanticsNode()
+            .boundsInRoot
+        assertEquals(selectedThemeBounds.center.x, selectedThemeLabelBounds.center.x, 1f)
         composeTestRule.onNodeWithTag("units_selection_mark_IMPERIAL", useUnmergedTree = true)
+            .assertDoesNotExist()
+        composeTestRule.onNodeWithTag("units_selection_mark_METRIC", useUnmergedTree = true)
             .assertDoesNotExist()
     }
 
@@ -277,19 +285,6 @@ class SettingsScreenTest {
                 assertTrue(labelBounds.right <= segmentBounds.right)
             }
         }
-        val selectedUnitLabelBounds = composeTestRule
-            .onNodeWithText("Metric", useUnmergedTree = true)
-            .fetchSemanticsNode()
-            .boundsInRoot
-        val selectedUnitMarkBounds = composeTestRule
-            .onNodeWithTag("units_selection_mark_METRIC", useUnmergedTree = true)
-            .fetchSemanticsNode()
-            .boundsInRoot
-
-        assertTrue(
-            "Selected unit label $selectedUnitLabelBounds overlaps mark $selectedUnitMarkBounds",
-            selectedUnitMarkBounds.right <= selectedUnitLabelBounds.left,
-        )
     }
 
     private class RecordingPlatformBehavior : WeatherPlatformBehavior {

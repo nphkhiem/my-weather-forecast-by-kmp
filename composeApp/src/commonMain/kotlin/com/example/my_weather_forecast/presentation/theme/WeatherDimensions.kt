@@ -157,8 +157,6 @@ object SettingsTokens {
     val ThemePreviewPadding = WeatherSpacing.Xs
     val ThemePreviewLineHeight = 5.dp
     val ThemeLabelGap = WeatherSpacing.Sm
-    val SelectionMarkSize = 20.dp
-    val SelectionMarkIconSize = 12.dp
     val SegmentContainerPadding = WeatherSpacing.Xs
     val SegmentGap = WeatherSpacing.Xs
     val SegmentMinHeight = 52.dp

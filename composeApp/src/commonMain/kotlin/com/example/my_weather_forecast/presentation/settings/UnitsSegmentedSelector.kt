@@ -7,23 +7,17 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.testTag
 import com.example.my_weather_forecast.domain.model.Units
 import com.example.my_weather_forecast.presentation.platform.WeatherPressFeedback
 import com.example.my_weather_forecast.presentation.theme.SettingsTokens
@@ -32,7 +26,6 @@ import com.example.my_weather_forecast.presentation.theme.WeatherRadii
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.WeatherTypography
 import myweatherforecast.composeapp.generated.resources.Res
-import myweatherforecast.composeapp.generated.resources.ic_check
 import myweatherforecast.composeapp.generated.resources.units_imperial
 import myweatherforecast.composeapp.generated.resources.units_imperial_accessibility
 import myweatherforecast.composeapp.generated.resources.units_imperial_symbol
@@ -40,7 +33,6 @@ import myweatherforecast.composeapp.generated.resources.units_metric
 import myweatherforecast.composeapp.generated.resources.units_metric_accessibility
 import myweatherforecast.composeapp.generated.resources.units_metric_symbol
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -135,25 +127,6 @@ private fun UnitsSegment(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (selected) {
-                Surface(
-                    modifier = Modifier.size(SettingsTokens.SelectionMarkSize),
-                    shape = CircleShape,
-                    color = colors.accent,
-                    contentColor = colors.onAccent,
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_check),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(SettingsTokens.SelectionMarkIconSize)
-                                .testTag("units_selection_mark_${units.name}"),
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.size(SettingsTokens.SegmentLabelGap))
-            }
             Text(
                 text = symbol,
                 color = if (selected) colors.accent else colors.textSecondary,

@@ -8,18 +8,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,12 +31,10 @@ import com.example.my_weather_forecast.presentation.theme.WeatherRadii
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.WeatherTypography
 import myweatherforecast.composeapp.generated.resources.Res
-import myweatherforecast.composeapp.generated.resources.ic_check
 import myweatherforecast.composeapp.generated.resources.theme_dark
 import myweatherforecast.composeapp.generated.resources.theme_light
 import myweatherforecast.composeapp.generated.resources.theme_system
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -128,34 +121,11 @@ private fun ThemePreviewOption(
         verticalArrangement = Arrangement.spacedBy(SettingsTokens.ThemeLabelGap),
     ) {
         ThemeMiniature(mode = mode)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = label,
-                color = colors.textPrimary,
-                style = WeatherTypography.Label,
-            )
-            if (selected) {
-                Spacer(modifier = Modifier.size(SettingsTokens.ThemeLabelGap))
-                Surface(
-                    modifier = Modifier.size(SettingsTokens.SelectionMarkSize),
-                    shape = CircleShape,
-                    color = colors.accent,
-                    contentColor = colors.onAccent,
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(Res.drawable.ic_check),
-                            contentDescription = null,
-                            modifier = Modifier.size(SettingsTokens.SelectionMarkIconSize),
-                        )
-                    }
-                }
-            }
-        }
+        Text(
+            text = label,
+            color = colors.textPrimary,
+            style = WeatherTypography.Label,
+        )
     }
 }
 
