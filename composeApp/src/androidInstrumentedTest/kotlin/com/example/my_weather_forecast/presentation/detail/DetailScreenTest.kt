@@ -43,6 +43,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -258,7 +259,7 @@ class DetailScreenTest {
             .onNodeWithTag(DAILY_FORECAST_PANEL_TEST_TAG)
             .fetchSemanticsNode()
             .boundsInRoot
-        listOf("H 31°", "L 22°", "100% rain", "Wind 2 m/s  ·  Humidity 60%").forEach { label ->
+        listOf("H 31°", "L 22°", "100% rain", "Wind 2 m/s", "Humidity 60%").forEach { label ->
             val readingBounds = composeTestRule
                 .onNodeWithText(label, useUnmergedTree = true)
                 .fetchSemanticsNode()
@@ -527,6 +528,117 @@ class DetailScreenTest {
                 }
             }
         }
+    }
+
+
+    @Test
+    fun givenADailyRow_whenRendered_thenWindAndHumiditySitOnSeparateLines() {
+        setDailyPanel()
+
+        val wind = textBounds("Wind 2 m/s")
+        val humidity = textBounds("Humidity 60%")
+
+        assertTrue(
+            "Wind bottom ${wind.bottom} must sit above humidity top ${humidity.top}",
+            wind.bottom <= humidity.top,
+        )
+    }
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheDateIsCentredUnderItsDayLabel() {
+        setDailyPanel()
+
+        val day = textBounds("Today")
+        val date = textBounds("26/07")
+
+        assertEquals(
+            "Date centre ${date.center.x} must line up with day centre ${day.center.x}",
+            day.center.x,
+            date.center.x,
+            1f,
+        )
+    }
+
+    private fun textBounds(text: String) = composeTestRule
+        .onNodeWithText(text, useUnmergedTree = true)
+        .fetchSemanticsNode()
+        .boundsInRoot
+
+    private fun setDailyPanel() {
+        val today = LocalDate(2026, 7, 26)
+        val condition = WeatherCondition(
+            owmCode = 500,
+            group = "Rain",
+            description = "light rain",
+            icon = WeatherIcon.RAIN,
+            isDaytime = true,
+        )
+        composeTestRule.setContent {
+            WeatherForecastTheme {
+                DailyForecastPanel(
+                    daily = listOf(DailyForecast(today, 22.0, 31.0, 60, 2.0, 0.0, condition)),
+                    today = today,
+                    units = Units.METRIC,
+                    modifier = Modifier.requiredWidth(390.dp),
+                )
+            }
+        }
+    }
+
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheDateHasBreathingRoomBelowItsDayLabel() {
+        setDailyPanel()
+
+        val day = dpBounds("Today")
+        val date = dpBounds("26/07")
+        val gap = date.top - day.bottom
+
+        assertTrue(
+            "Gap between day and date was $gap, expected at least $DAILY_LABEL_GAP",
+            gap >= DAILY_LABEL_GAP,
+        )
+    }
+
+    @Test
+    fun givenADailyRow_whenRendered_thenWindAndHumidityHaveBreathingRoomBetweenThem() {
+        setDailyPanel()
+
+        val wind = dpBounds("Wind 2 m/s")
+        val humidity = dpBounds("Humidity 60%")
+        val gap = humidity.top - wind.bottom
+
+        assertTrue(
+            "Gap between wind and humidity was $gap, expected at least $DAILY_LABEL_GAP",
+            gap >= DAILY_LABEL_GAP,
+        )
+    }
+
+    private fun dpBounds(text: String) = composeTestRule
+        .onNodeWithText(text, useUnmergedTree = true)
+        .getUnclippedBoundsInRoot()
+
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheLeftGroupIsCentredAgainstTheRightReadings() {
+        setDailyPanel()
+
+        val leftTop = dpBounds("Today").top
+        val leftBottom = dpBounds("26/07").bottom
+        val rightTop = dpBounds("0% rain").top
+        val rightBottom = dpBounds("Humidity 60%").bottom
+        val leftCentre = (leftTop + leftBottom) / 2
+        val rightCentre = (rightTop + rightBottom) / 2
+
+        assertTrue(
+            "Left group centre $leftCentre must line up with right readings centre $rightCentre",
+            (leftCentre - rightCentre).value.absoluteValue <= 1f,
+        )
+    }
+
+
+    private companion object {
+        val DAILY_LABEL_GAP = 6.dp
     }
 
 }

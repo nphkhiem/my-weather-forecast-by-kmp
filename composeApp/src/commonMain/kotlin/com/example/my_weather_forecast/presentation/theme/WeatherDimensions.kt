@@ -188,12 +188,14 @@ object ForecastPanelTokens {
     val DailyColumnGap = WeatherSpacing.Md
     val DailyIconSize = 30.dp
     val DailySupportingTopSpace = WeatherSpacing.Xs
+    val DailyLabelGap = 6.dp
+    val DailySupportingGap = 6.dp
     val DailyStackedTopSpace = WeatherSpacing.Sm
     val DailyCompactBreakpoint = 300.dp
     const val DailyLargeFontScale = 1.5f
     const val DailyLabelWeight = 1.1f
     const val DailyTemperatureWeight = 0.85f
-    const val DailyRainWeight = 0.85f
+    const val DailyReadingsWeight = 1.15f
     const val BorderAlpha = 0.56f
 }
 

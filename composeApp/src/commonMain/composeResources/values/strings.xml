@@ -97,7 +97,8 @@
     <string name="detail_hourly_empty">No more hourly forecasts today.</string>
     <string name="detail_daily_title">Daily outlook</string>
     <string name="detail_daily_hint">Daily highs, lows, and rain</string>
-    <string name="daily_supporting_line">Wind %1$d %2$s  ·  Humidity %3$d%</string>
+    <string name="daily_wind_line">Wind %1$d %2$s</string>
+    <string name="daily_humidity_line">Humidity %1$d%</string>
     <string name="daily_accessibility">%1$s, %2$s, %3$s, high %4$d, low %5$d, %6$d percent chance of rain, wind %7$d %8$s, %9$d percent humidity</string>
     <string name="hourly_accessibility">%1$s, %2$s, %3$d degrees, %4$d percent chance of rain</string>
     <string name="day_today">Today</string>
