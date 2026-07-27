@@ -1,11 +1,14 @@
 package com.example.my_weather_forecast.presentation.settings
 
 import app.cash.turbine.test
+import com.example.my_weather_forecast.core.preference.SettingsThemePreference
+import com.example.my_weather_forecast.core.preference.SettingsUnitsPreference
 import com.example.my_weather_forecast.core.preference.ThemeMode
 import com.example.my_weather_forecast.domain.model.Units
 import com.example.my_weather_forecast.testutil.FakeThemePreference
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
 import com.example.my_weather_forecast.testutil.runMainDispatcherTest
+import com.russhwolf.settings.MapSettings
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlinx.coroutines.test.TestScope
@@ -48,4 +51,25 @@ class SettingsViewModelTest {
             assertEquals(Units.IMPERIAL, awaitItem())
         }
     }
+
+    @Test
+    fun givenSelectionsChanged_whenViewModelIsRecreated_thenBothSelectionsPersist() =
+        runMainDispatcherTest {
+            val settings = MapSettings()
+            val firstViewModel = SettingsViewModel(
+                unitsPreference = SettingsUnitsPreference(settings),
+                themePreference = SettingsThemePreference(settings),
+            )
+
+            firstViewModel.setUnits(Units.IMPERIAL)
+            firstViewModel.setThemeMode(ThemeMode.DARK)
+
+            val recreatedViewModel = SettingsViewModel(
+                unitsPreference = SettingsUnitsPreference(settings),
+                themePreference = SettingsThemePreference(settings),
+            )
+
+            assertEquals(Units.IMPERIAL, recreatedViewModel.units.value)
+            assertEquals(ThemeMode.DARK, recreatedViewModel.themeMode.value)
+        }
 }
