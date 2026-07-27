@@ -151,6 +151,7 @@ fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: U
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = ForecastPanelTokens.DailySupportingTopSpace),
+            verticalArrangement = Arrangement.spacedBy(ForecastPanelTokens.DailySupportingGap),
         ) {
             listOf(
                 stringResource(Res.string.daily_wind_line, windSpeed, windUnitLabel),
@@ -243,7 +244,10 @@ private fun DailyDateLabel(dayLabel: String, dateLabel: String, modifier: Modifi
     Column(modifier = modifier) {
         // The inner column wraps to the wider of the two labels, so the date centres under the day
         // name while the pair stays left aligned inside its track.
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(ForecastPanelTokens.DailyLabelGap),
+        ) {
             Text(
                 text = dayLabel,
                 color = colors.textPrimary,

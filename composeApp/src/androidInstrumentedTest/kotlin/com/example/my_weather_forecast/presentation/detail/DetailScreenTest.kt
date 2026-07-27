@@ -584,4 +584,42 @@ class DetailScreenTest {
         }
     }
 
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheDateHasBreathingRoomBelowItsDayLabel() {
+        setDailyPanel()
+
+        val day = dpBounds("Today")
+        val date = dpBounds("26/07")
+        val gap = date.top - day.bottom
+
+        assertTrue(
+            "Gap between day and date was $gap, expected at least $DAILY_LABEL_GAP",
+            gap >= DAILY_LABEL_GAP,
+        )
+    }
+
+    @Test
+    fun givenADailyRow_whenRendered_thenWindAndHumidityHaveBreathingRoomBetweenThem() {
+        setDailyPanel()
+
+        val wind = dpBounds("Wind 2 m/s")
+        val humidity = dpBounds("Humidity 60%")
+        val gap = humidity.top - wind.bottom
+
+        assertTrue(
+            "Gap between wind and humidity was $gap, expected at least $DAILY_LABEL_GAP",
+            gap >= DAILY_LABEL_GAP,
+        )
+    }
+
+    private fun dpBounds(text: String) = composeTestRule
+        .onNodeWithText(text, useUnmergedTree = true)
+        .getUnclippedBoundsInRoot()
+
+
+    private companion object {
+        val DAILY_LABEL_GAP = 6.dp
+    }
+
 }
