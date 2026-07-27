@@ -1,6 +1,12 @@
 package com.example.my_weather_forecast.presentation.search
 
 import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.Location
@@ -164,3 +170,57 @@ private fun SearchAddFailedDarkPreview() = SearchContentPreview(
     darkTheme = true,
     feedback = SearchEvent.AddFailed,
 )
+
+/** Deliberately long place names, to stress the result hierarchy against real-world extremes. */
+private val longNameResults = listOf(
+    Location(
+        id = 0,
+        name = "San Fernando del Valle de Catamarca",
+        country = "Argentina",
+        state = "Catamarca Province",
+        lat = -28.47,
+        lon = -65.79,
+        sortOrder = 0,
+    ),
+    Location(
+        id = 1,
+        name = "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch",
+        country = "United Kingdom",
+        state = "Isle of Anglesey",
+        lat = 53.22,
+        lon = -4.20,
+        sortOrder = 1,
+    ),
+)
+
+@Composable
+private fun LongNameSearchPreview(darkTheme: Boolean, fontScale: Float = 1f) {
+    val density = LocalDensity.current
+    CompositionLocalProvider(LocalDensity provides Density(density.density, fontScale)) {
+        WeatherForecastTheme(darkTheme = darkTheme) {
+            Surface(modifier = Modifier.requiredWidth(320.dp)) {
+                SearchContent(
+                    uiState = SearchUiState.Results(longNameResults),
+                    query = "san",
+                    onQueryChange = {},
+                    onLocationClick = {},
+                    pressFeedback = WeatherPressFeedback.TONAL_HIGHLIGHT,
+                    autoFocusSearch = false,
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun SearchLongNamesLightPreview() = LongNameSearchPreview(darkTheme = false)
+
+@Preview
+@Composable
+private fun SearchLongNamesDarkPreview() = LongNameSearchPreview(darkTheme = true)
+
+@Preview
+@Composable
+private fun SearchLongNamesLargeTextPreview() =
+    LongNameSearchPreview(darkTheme = false, fontScale = 2f)
