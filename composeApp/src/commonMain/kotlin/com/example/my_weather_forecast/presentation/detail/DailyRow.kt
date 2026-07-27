@@ -102,7 +102,6 @@ fun DailyForecastPanel(
 
 @Composable
 fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: Units, modifier: Modifier = Modifier) {
-    val colors = WeatherTheme.colors
     val dayLabel = daily.date.dayLabel(today)
     val conditionName = daily.condition.icon.readableName()
     val windUnitLabel = stringResource(units.windSpeedUnitLabelRes())
@@ -115,6 +114,9 @@ fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: U
         dayLabel, dateLabel, conditionName, tempMax, tempMin, popPercent, windSpeed, windUnitLabel, daily.humidity,
     )
 
+    val windLine = stringResource(Res.string.daily_wind_line, windSpeed, windUnitLabel)
+    val humidityLine = stringResource(Res.string.daily_humidity_line, daily.humidity)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -126,14 +128,21 @@ fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: U
                 maxWidth < ForecastPanelTokens.DailyCompactBreakpoint ||
                     LocalDensity.current.fontScale >= ForecastPanelTokens.DailyLargeFontScale
             if (useStackedLayout) {
-                DailyStackedReading(
-                    dayLabel = dayLabel,
-                    dateLabel = dateLabel,
-                    daily = daily,
-                    tempMax = tempMax,
-                    tempMin = tempMin,
-                    popPercent = popPercent,
-                )
+                Column {
+                    DailyStackedReading(
+                        dayLabel = dayLabel,
+                        dateLabel = dateLabel,
+                        daily = daily,
+                        tempMax = tempMax,
+                        tempMin = tempMin,
+                        popPercent = popPercent,
+                    )
+                    DailySupportingLines(
+                        windLine = windLine,
+                        humidityLine = humidityLine,
+                        modifier = Modifier.padding(top = ForecastPanelTokens.DailySupportingTopSpace),
+                    )
+                }
             } else {
                 DailyColumnReading(
                     dayLabel = dayLabel,
@@ -142,27 +151,8 @@ fun DailyRow(daily: DailyForecast, today: LocalDate, dateLabel: String, units: U
                     tempMax = tempMax,
                     tempMin = tempMin,
                     popPercent = popPercent,
-                )
-            }
-        }
-        // Wind and humidity each take their own line so their right edges align across rows,
-        // instead of one combined line whose left edge shifts with the values.
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = ForecastPanelTokens.DailySupportingTopSpace),
-            verticalArrangement = Arrangement.spacedBy(ForecastPanelTokens.DailySupportingGap),
-        ) {
-            listOf(
-                stringResource(Res.string.daily_wind_line, windSpeed, windUnitLabel),
-                stringResource(Res.string.daily_humidity_line, daily.humidity),
-            ).forEach { supportingLine ->
-                Text(
-                    text = supportingLine,
-                    color = colors.textTertiary,
-                    style = WeatherTypography.Caption,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.fillMaxWidth(),
+                    windLine = windLine,
+                    humidityLine = humidityLine,
                 )
             }
         }
@@ -177,6 +167,8 @@ private fun DailyColumnReading(
     tempMax: Int,
     tempMin: Int,
     popPercent: Int,
+    windLine: String,
+    humidityLine: String,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -194,10 +186,39 @@ private fun DailyColumnReading(
             tempMin = tempMin,
             modifier = Modifier.weight(ForecastPanelTokens.DailyTemperatureWeight),
         )
-        DailyRain(
-            popPercent = popPercent,
-            modifier = Modifier.weight(ForecastPanelTokens.DailyRainWeight),
-        )
+        // Rain, wind, and humidity form one right-hand block, so the day, icon, and temperature
+        // centre against the whole block instead of hugging the top of the row.
+        Column(
+            modifier = Modifier.weight(ForecastPanelTokens.DailyReadingsWeight),
+            verticalArrangement = Arrangement.spacedBy(ForecastPanelTokens.DailySupportingGap),
+        ) {
+            DailyRain(popPercent = popPercent, modifier = Modifier.fillMaxWidth())
+            DailySupportingLines(windLine = windLine, humidityLine = humidityLine)
+        }
+    }
+}
+
+/** Wind and humidity each take their own line so their right edges align across rows. */
+@Composable
+private fun DailySupportingLines(
+    windLine: String,
+    humidityLine: String,
+    modifier: Modifier = Modifier,
+) {
+    val colors = WeatherTheme.colors
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(ForecastPanelTokens.DailySupportingGap),
+    ) {
+        listOf(windLine, humidityLine).forEach { supportingLine ->
+            Text(
+                text = supportingLine,
+                color = colors.textTertiary,
+                style = WeatherTypography.Caption,
+                textAlign = TextAlign.End,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

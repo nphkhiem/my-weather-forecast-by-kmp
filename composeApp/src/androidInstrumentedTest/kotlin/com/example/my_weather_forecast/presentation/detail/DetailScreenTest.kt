@@ -43,6 +43,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -616,6 +617,24 @@ class DetailScreenTest {
     private fun dpBounds(text: String) = composeTestRule
         .onNodeWithText(text, useUnmergedTree = true)
         .getUnclippedBoundsInRoot()
+
+
+    @Test
+    fun givenADailyRow_whenRendered_thenTheLeftGroupIsCentredAgainstTheRightReadings() {
+        setDailyPanel()
+
+        val leftTop = dpBounds("Today").top
+        val leftBottom = dpBounds("26/07").bottom
+        val rightTop = dpBounds("0% rain").top
+        val rightBottom = dpBounds("Humidity 60%").bottom
+        val leftCentre = (leftTop + leftBottom) / 2
+        val rightCentre = (rightTop + rightBottom) / 2
+
+        assertTrue(
+            "Left group centre $leftCentre must line up with right readings centre $rightCentre",
+            (leftCentre - rightCentre).value.absoluteValue <= 1f,
+        )
+    }
 
 
     private companion object {
