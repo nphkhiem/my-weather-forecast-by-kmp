@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,9 +28,8 @@ import com.example.my_weather_forecast.presentation.theme.ForecastPanelTokens
 import com.example.my_weather_forecast.presentation.theme.WeatherRadii
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.WeatherTypography
-import com.example.my_weather_forecast.presentation.theme.accentColor
 import com.example.my_weather_forecast.presentation.theme.readableName
-import com.example.my_weather_forecast.presentation.theme.toDrawableResource
+import com.example.my_weather_forecast.presentation.theme.WeatherConditionIcon
 import myweatherforecast.composeapp.generated.resources.Res
 import myweatherforecast.composeapp.generated.resources.area_rain
 import myweatherforecast.composeapp.generated.resources.detail_hourly_empty
@@ -39,7 +37,6 @@ import myweatherforecast.composeapp.generated.resources.detail_hourly_hint
 import myweatherforecast.composeapp.generated.resources.detail_hourly_title
 import myweatherforecast.composeapp.generated.resources.hourly_accessibility
 import myweatherforecast.composeapp.generated.resources.temp_degrees
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val HOURLY_FORECAST_LIST_TEST_TAG = "hourly_forecast_list"
@@ -119,13 +116,10 @@ private fun HourlyForecastItem(hour: HourlyForecast, modifier: Modifier = Modifi
                 color = colors.textSecondary,
                 style = WeatherTypography.Caption,
             )
-            Icon(
-                painter = painterResource(hour.condition.icon.toDrawableResource()),
+            WeatherConditionIcon(
+                icon = hour.condition.icon,
+                isDaytime = hour.condition.isDaytime,
                 contentDescription = null,
-                tint = hour.condition.icon.accentColor(
-                    isDaytime = hour.condition.isDaytime,
-                    darkTheme = WeatherTheme.darkTheme,
-                ),
                 modifier = Modifier.size(ForecastPanelTokens.HourIconSize),
             )
             Text(
