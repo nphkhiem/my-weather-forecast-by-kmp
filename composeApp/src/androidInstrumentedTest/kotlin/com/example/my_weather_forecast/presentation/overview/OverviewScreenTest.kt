@@ -38,6 +38,7 @@ import com.example.my_weather_forecast.testutil.FakeWeatherRepository
 import com.example.my_weather_forecast.testutil.sampleForecast
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
+import kotlin.math.absoluteValue
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -413,5 +414,26 @@ class OverviewScreenTest {
         }
         composeTestRule.waitForIdle()
     }
+
+
+    @Test
+    fun givenASavedPlaceCard_whenRendered_thenTheTemperatureCentresAgainstTheLeftContent() {
+        setContentWithArea()
+
+        val name = textDpBounds("Chicago")
+        val lastMetric = textDpBounds("20% rain")
+        val temperature = textDpBounds("21°")
+        val leftCentre = (name.top + lastMetric.bottom) / 2
+        val temperatureCentre = (temperature.top + temperature.bottom) / 2
+
+        assertTrue(
+            "Temperature centre $temperatureCentre must line up with left content centre $leftCentre",
+            (temperatureCentre - leftCentre).value.absoluteValue <= 1f,
+        )
+    }
+
+    private fun textDpBounds(text: String) = composeTestRule
+        .onNodeWithText(text, substring = true, useUnmergedTree = true)
+        .getUnclippedBoundsInRoot()
 
 }

@@ -285,9 +285,11 @@ fun LocationSummaryCard(
                 }
                 Text(
                     text = stringResource(Res.string.temp_degrees, currentTemp),
+                    // Centred against the name, condition, and metrics block rather than pinned to
+                    // the top, so the two sides of the card read as one row.
                     modifier = Modifier
                         .padding(start = WeatherSpacing.Sm)
-                        .align(Alignment.Top),
+                        .align(Alignment.CenterVertically),
                     color = palette.onGradient,
                     style = WeatherTypography.CardTemperature,
                 )

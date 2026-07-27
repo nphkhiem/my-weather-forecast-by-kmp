@@ -5,8 +5,8 @@
 <h1 align="center">Trời Ơi</h1>
 
 <p align="center">
-  A weather app for Android and iOS built with Kotlin Multiplatform and Compose Multiplatform —
-  one shared codebase, two native apps.
+  A weather app for Android and iOS. One shared codebase, two native apps, built with
+  Kotlin Multiplatform and Compose Multiplatform.
 </p>
 
 <p align="center">
@@ -17,23 +17,29 @@
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
-Search for a city, save up to 6 areas, and see current conditions, a 7-day outlook, and an
-hourly rain forecast — with offline-first caching, condition-driven gradient theming, a
-metric/imperial toggle, and a Light/Dark/System theme switch.
+Search for a city, save up to six places, and check the current conditions, a 7-day outlook, and
+how much rain to expect hour by hour. It caches what it fetches so it still works offline, tints
+itself to match the weather, and lets you switch between metric and imperial or Light, Dark, and
+System themes.
+
+The look follows a deliberate direction we called *Atmospheric Utility with a Soft Editorial
+finish*. In practice that means surfaces tinted by the weather, temperature and rain risk you can
+read at a glance, supporting details kept quiet, and motion saved for one focal point instead of
+scattered across every list.
 
 ## Screenshots
 
-Live data for six Vietnamese cities — Ho Chi Minh City, Hà Nội, Đà Nẵng, Quảng Ngãi, Cần Thơ,
-and Sa Pa — captured on an Android emulator and iOS simulator, in both Light and Dark mode.
-The Overview list shows all six saved areas at a glance; the Detail screen's gradient and icon
-colors are driven by the viewed area's actual weather condition and time of day, independent of
-the app's Light/Dark setting.
+Live captures of six Vietnamese cities: Ho Chi Minh City, Hà Nội, Đà Nẵng, Quảng Ngãi, Cần Thơ,
+and Sa Pa. Taken on an Android emulator and an iOS simulator, in both Light and Dark mode.
+
+Overview shows all six saved places at once. On Detail, the gradient and icon colors come from
+that area's real weather and time of day, which is separate from your Light/Dark setting.
 
 <table>
   <tr>
     <th></th>
-    <th>Overview — Light</th>
-    <th>Overview — Dark</th>
+    <th>Overview - Light</th>
+    <th>Overview - Dark</th>
     <th>Detail</th>
   </tr>
   <tr>
@@ -52,25 +58,36 @@ the app's Light/Dark setting.
 
 ## Features
 
-- **Overview**: saved areas at a glance (current temp, high/low, rain chance), pull-to-refresh,
-  swipe-to-delete with undo.
-- **Search**: debounced city search backed by OpenWeatherMap's geocoding API, capped at 6 saved
-  areas.
-- **Detail**: current conditions, an hourly rain strip scoped to the remaining hours of today, and
-  a 7-day forecast per area — all set against a soft two-stop gradient keyed to that area's actual
-  weather condition and time of day.
-- **Animated condition icons**: sun rays rotate, clouds drift, rain/drizzle/snow fall, and storm
-  clouds flash — small, cheap Compose property animations, not static glyphs.
-- **Theming**: a persisted Light/Dark/System preference, reachable from a Settings screen; picking
-  System always wins back over a stale manual choice the next time the OS theme actually changes.
-- **Offline-first caching**: SQLDelight is the single source of truth; a 30-minute TTL plus
-  request coalescing keep the UI responsive and avoid redundant network calls. Stale cache is
-  still shown (flagged) if a refresh fails.
-- **Units**: switch between metric (°C, m/s) and imperial (°F, mph); switching invalidates the
-  cache and refetches in the new units. Persisted across restarts.
-- **Accessible**: all user-facing strings are externalized resources; every screen is
-  TalkBack/VoiceOver-navigable with content descriptions on interactive and informational
-  elements.
+- **Overview**: all your saved places at a glance, with the current temperature, the day's high
+  and low, and the chance of rain. Pull down to refresh. Swipe to delete, with an undo if you
+  change your mind.
+- **Search**: type a city name and results come in as you go, backed by OpenWeatherMap's geocoding
+  API. You can keep up to six places saved.
+- **Detail**: current conditions at the top, an hourly rain strip covering the rest of today, and a
+  7-day forecast below. The whole screen sits on a soft two-stop gradient keyed to that area's
+  weather and time of day.
+- **Motion, kept deliberately quiet**: icons in lists never animate. Only the Detail hero moves,
+  and it gets one small gesture matched to the condition: a gentle turn, a slow breathe, a drift,
+  falling rain or snow, or a single restrained thunder pulse. Every cycle is followed by a pause.
+  The animation stops when the app goes to the background or the hero scrolls out of view, and if
+  you have reduced motion turned on it does not run at all.
+- **Adaptive layouts**: one shared set of width tiers drives all four screens, so no screen invents
+  its own breakpoint. Phones and mid-size widths stay single column. At tablet widths, Detail puts
+  the hero and the forecast panels side by side, and Overview switches to a two-column grid.
+- **Theming**: pick Light, Dark, or System from theme preview cards in Settings, next to a
+  segmented control for units. Your choice sticks. If you pick System, the app goes back to
+  following the OS the next time the system theme actually changes. Theme decides brightness and
+  weather only tints, so a rainy night will never drag a Light screen into darkness.
+- **Works offline**: SQLDelight is the single source of truth. A 30-minute cache plus request
+  coalescing keeps things quick and avoids repeat network calls. If a refresh fails you still see
+  the cached forecast, clearly marked as out of date.
+- **Units**: switch between metric (°C, m/s) and imperial (°F, mph). Switching clears the cache and
+  refetches in the new units, and the choice survives a restart.
+- **Accessibility**: every string lives in resources. Cards, forecast rows, and search results each
+  read out as a single description rather than a pile of fragments. Section titles are marked as
+  headings, status changes announce politely, and deleting a saved place has its own screen-reader
+  action so swiping is never the only way. Every tappable target is at least 48 dp, checked at 200%
+  font size on a 320 dp screen, and the Settings selectors work with an external keyboard.
 
 ## Tech stack
 
@@ -86,11 +103,12 @@ the app's Light/Dark setting.
 
 ## Architecture
 
-Clean Architecture with one-way dependencies: `presentation` → `domain` ← `data`. The `domain`
-layer (models, repository interfaces, use cases) has no framework imports — it's the one part of
-the codebase that doesn't know Android, iOS, Compose, or SQLDelight exist. Everything in
-`commonMain` is shared source compiled for both targets; `androidMain`/`iosMain` hold nothing but
-the platform bindings each shared interface needs.
+Clean Architecture, with dependencies pointing one way: `presentation` -> `domain` <- `data`.
+
+The `domain` layer holds the models, repository interfaces, and use cases, and imports no
+frameworks at all. It is the one part of the codebase that has no idea Android, iOS, Compose, or
+SQLDelight exist. Everything in `commonMain` is shared source that compiles for both targets, and
+`androidMain` and `iosMain` contain nothing but the platform bindings each shared interface needs.
 
 ```mermaid
 graph TD
@@ -129,16 +147,16 @@ graph TD
 
 - `/composeApp` is the shared Kotlin Multiplatform module.
   - `commonMain` holds the domain, data, and presentation layers shared across both platforms.
-  - `androidMain` / `iosMain` hold only the platform-specific bindings (SQL driver, HTTP engine,
-    settings storage, Koin platform module).
-  - `commonTest` / `androidUnitTest` hold unit tests (ViewModels, repositories, mappers).
-    `androidInstrumentedTest` holds Compose UI tests that run on a device/emulator.
-- `/iosApp` is the iOS app shell (SwiftUI entry point hosting the shared Compose UI).
+  - `androidMain` and `iosMain` hold only the platform-specific bindings: SQL driver, HTTP engine,
+    settings storage, and the Koin platform module.
+  - `commonTest` and `androidUnitTest` hold unit tests for ViewModels, repositories, and mappers.
+    `androidInstrumentedTest` holds the Compose UI tests that run on a device or emulator.
+- `/iosApp` is the iOS app shell, a SwiftUI entry point hosting the shared Compose UI.
 
 ## Getting started
 
-Want to clone this and build your own weather app on top of it? Here's the full path from zero
-to a running build on both platforms.
+Want to clone this and build your own weather app on top of it? Here is the full path from zero to
+a running build on both platforms.
 
 1. **Install prerequisites**
    - JDK 17+
@@ -152,10 +170,10 @@ to a running build on both platforms.
    ```
 3. **Get an OpenWeatherMap API key.** Sign up at
    [openweathermap.org](https://openweathermap.org/api) and subscribe to the **One Call by Call**
-   plan — the free "Current Weather" tier is not enough; One Call 3.0 is what powers both the
-   forecast and the geocoding search. It includes 1,000 free calls/day before billing kicks in.
-4. **Configure your key locally.** Add this line to `local.properties` at the repo root (this file
-   is gitignored — never commit a real key):
+   plan. The free "Current Weather" tier is not enough, because One Call 3.0 is what powers both
+   the forecast and the geocoding search. It includes 1,000 free calls a day before billing starts.
+4. **Configure your key locally.** Add this line to `local.properties` at the repo root. That file
+   is gitignored, so never commit a real key:
    ```properties
    owm.apiKey=YOUR_KEY_HERE
    ```
@@ -164,7 +182,7 @@ to a running build on both platforms.
    ```bash
    ./gradlew :composeApp:installDebug
    ```
-6. **Run on iOS**: open `iosApp/iosApp.xcodeproj` in Xcode, pick a simulator, and hit Run — or from
+6. **Run on iOS**: open `iosApp/iosApp.xcodeproj` in Xcode, pick a simulator, and hit Run. Or from
    the command line:
    ```bash
    xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp -sdk iphonesimulator
@@ -180,7 +198,7 @@ to a running build on both platforms.
 
 ## License
 
-MIT — see [LICENSE](LICENSE). Fork it, extend it, ship your own version.
+MIT, see [LICENSE](LICENSE). Fork it, extend it, ship your own version.
 
 ---
 
