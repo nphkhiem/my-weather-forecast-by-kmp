@@ -21,6 +21,11 @@ Search for a city, save up to 6 areas, and see current conditions, a 7-day outlo
 hourly rain forecast — with offline-first caching, condition-driven gradient theming, a
 metric/imperial toggle, and a Light/Dark/System theme switch.
 
+The interface follows a deliberate design direction — *Atmospheric Utility with a Soft Editorial
+finish*: weather-tinted surfaces, a strong glanceable hierarchy for temperature and rain risk,
+quiet supporting metadata, and motion reserved for a single focal point rather than sprayed across
+every list.
+
 ## Screenshots
 
 Live data for six Vietnamese cities — Ho Chi Minh City, Hà Nội, Đà Nẵng, Quảng Ngãi, Cần Thơ,
@@ -59,18 +64,31 @@ the app's Light/Dark setting.
 - **Detail**: current conditions, an hourly rain strip scoped to the remaining hours of today, and
   a 7-day forecast per area — all set against a soft two-stop gradient keyed to that area's actual
   weather condition and time of day.
-- **Animated condition icons**: sun rays rotate, clouds drift, rain/drizzle/snow fall, and storm
-  clouds flash — small, cheap Compose property animations, not static glyphs.
-- **Theming**: a persisted Light/Dark/System preference, reachable from a Settings screen; picking
-  System always wins back over a stale manual choice the next time the OS theme actually changes.
+- **Static-by-default motion**: every icon in a scrolling list stays still. Condition motion is
+  reserved for the Detail hero, which carries a single low-amplitude gesture per condition — a
+  gentle turn, breathe, drift, fall, or one restrained thunder pulse — with a quiet rest interval
+  between cycles. The loop pauses when the app is backgrounded or the hero scrolls off-screen, and
+  the platform's reduced-motion setting replaces it with the icon's stable static state.
+- **Adaptive layouts**: one shared width tier drives every route, so no screen owns its own
+  breakpoint. Phones and medium widths keep a single column; at tablet widths the Detail screen
+  splits the hero and the forecast panels into balanced columns and Overview becomes a two-column
+  card grid.
+- **Theming**: a persisted Light/Dark/System preference, chosen from visual theme preview cards and
+  a segmented units control in Settings; picking System always wins back over a stale manual choice
+  the next time the OS theme actually changes. Theme choice owns luminance — a rainy night never
+  drags a Light-mode screen into darkness; the weather condition only tints the atmosphere inside
+  the chosen luminance family.
 - **Offline-first caching**: SQLDelight is the single source of truth; a 30-minute TTL plus
   request coalescing keep the UI responsive and avoid redundant network calls. Stale cache is
   still shown (flagged) if a refresh fails.
 - **Units**: switch between metric (°C, m/s) and imperial (°F, mph); switching invalidates the
   cache and refetches in the new units. Persisted across restarts.
-- **Accessible**: all user-facing strings are externalized resources; every screen is
-  TalkBack/VoiceOver-navigable with content descriptions on interactive and informational
-  elements.
+- **Accessible**: all user-facing strings are externalized resources. Cards, forecast rows, and
+  search results expose one merged description each instead of a stream of fragments; section
+  titles carry heading semantics; status surfaces announce politely as live regions; and removing a
+  saved place has a screen-reader action, so swipe is never the only path. Every interactive target
+  clears 48 dp, verified at 200 percent font scale on a 320 dp screen, and the selectors are
+  reachable and activatable with an external keyboard.
 
 ## Tech stack
 
