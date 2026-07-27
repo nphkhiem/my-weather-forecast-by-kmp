@@ -3,6 +3,7 @@ package com.example.my_weather_forecast.presentation.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -36,9 +37,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import com.example.my_weather_forecast.presentation.platform.WeatherSystemBarIconTone
 import com.example.my_weather_forecast.presentation.platform.WeatherSystemBars
+import com.example.my_weather_forecast.presentation.theme.LocalWeatherWidthTier
 import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
+import com.example.my_weather_forecast.presentation.theme.widthTier
 
 internal const val WEATHER_SCREEN_CONTENT_TEST_TAG = "weather_screen_content"
 internal const val WEATHER_TOP_BAR_CONTENT_TEST_TAG = "weather_top_bar_content"
@@ -54,6 +57,7 @@ fun WeatherScreenFrame(
     title: String,
     modifier: Modifier = Modifier,
     contentMaxWidth: Dp = WeatherLayout.PageMaxWidth,
+    expandedContentMaxWidth: Dp = contentMaxWidth,
     onNavigationClick: (() -> Unit)? = null,
     navigationIcon: (@Composable () -> Unit)? = null,
     topBarAlignment: WeatherTopBarAlignment = if (onNavigationClick == null) {
@@ -86,40 +90,50 @@ fun WeatherScreenFrame(
         },
     )
 
-    Box(modifier = modifier.fillMaxSize().background(resolvedBackground)) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.onBackground,
-            contentWindowInsets = WindowInsets.safeDrawing,
-            topBar = {
-                WeatherTopBar(
-                    title = title,
-                    contentMaxWidth = contentMaxWidth,
-                    alignment = topBarAlignment,
-                    onNavigationClick = onNavigationClick,
-                    navigationIcon = navigationIcon,
-                    actions = actions,
-                    contentColor = resolvedTopBarContentColor,
-                )
-            },
-            snackbarHost = snackbarHost,
-            floatingActionButton = floatingActionButton,
-        ) { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .consumeWindowInsets(innerPadding),
-                contentAlignment = Alignment.TopCenter,
-            ) {
+    BoxWithConstraints(modifier = modifier.fillMaxSize().background(resolvedBackground)) {
+        // One place decides what "wide" means, so no route grows its own breakpoint.
+        val widthTier = WeatherLayout.widthTier(maxWidth)
+        // A route that splits into columns needs more room than a single reading column.
+        val resolvedMaxWidth = if (widthTier.supportsSideBySide) {
+            expandedContentMaxWidth
+        } else {
+            contentMaxWidth
+        }
+        CompositionLocalProvider(LocalWeatherWidthTier provides widthTier) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                contentWindowInsets = WindowInsets.safeDrawing,
+                topBar = {
+                    WeatherTopBar(
+                        title = title,
+                        contentMaxWidth = resolvedMaxWidth,
+                        alignment = topBarAlignment,
+                        onNavigationClick = onNavigationClick,
+                        navigationIcon = navigationIcon,
+                        actions = actions,
+                        contentColor = resolvedTopBarContentColor,
+                    )
+                },
+                snackbarHost = snackbarHost,
+                floatingActionButton = floatingActionButton,
+            ) { innerPadding ->
                 Box(
                     modifier = Modifier
-                        .widthIn(max = contentMaxWidth)
                         .fillMaxSize()
-                        .testTag(WEATHER_SCREEN_CONTENT_TEST_TAG),
-                    content = content,
-                )
+                        .padding(innerPadding)
+                        .consumeWindowInsets(innerPadding),
+                    contentAlignment = Alignment.TopCenter,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .widthIn(max = resolvedMaxWidth)
+                            .fillMaxSize()
+                            .testTag(WEATHER_SCREEN_CONTENT_TEST_TAG),
+                        content = content,
+                    )
+                }
             }
         }
     }

@@ -35,11 +35,14 @@ import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
 import com.example.my_weather_forecast.domain.model.Units
+import com.example.my_weather_forecast.presentation.theme.DetailHeroTokens
+import com.example.my_weather_forecast.presentation.theme.LocalWeatherWidthTier
 import com.example.my_weather_forecast.presentation.theme.WeatherConditionIcon
 import com.example.my_weather_forecast.presentation.theme.WeatherIconMotion
-import com.example.my_weather_forecast.presentation.theme.DetailHeroTokens
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
+import com.example.my_weather_forecast.presentation.theme.gutter
 import com.example.my_weather_forecast.presentation.theme.palette
 import com.example.my_weather_forecast.presentation.theme.readableName
 import kotlin.math.roundToInt
@@ -135,25 +138,52 @@ private fun SuccessContent(
     val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
     val palette = state.forecast.current.condition.palette(darkTheme = WeatherTheme.darkTheme)
 
+    val tier = LocalWeatherWidthTier.current
+    val gutter = WeatherLayout.gutter(tier)
+
+    // One scroll container for every tier. The wide layout splits into columns inside this scroll,
+    // so the two reading columns never introduce a nested scroll of their own.
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+            .padding(gutter),
+        verticalArrangement = Arrangement.spacedBy(gutter),
     ) {
         CompositionLocalProvider(LocalContentColor provides palette.onGradient) {
-            CurrentConditionsHero(
-                current = state.forecast.current,
-                units = state.forecast.units,
-                updateStatus = state.updateStatus(isRefreshing),
-            )
-            HourlyRainStrip(state.forecast.hourly.todayOnly(today))
-            DailyForecastPanel(
-                daily = state.forecast.daily,
-                today = today,
-                units = state.forecast.units,
-            )
+            val hero = @Composable {
+                CurrentConditionsHero(
+                    current = state.forecast.current,
+                    units = state.forecast.units,
+                    updateStatus = state.updateStatus(isRefreshing),
+                )
+            }
+            val panels = @Composable { panelModifier: Modifier ->
+                Column(
+                    modifier = panelModifier,
+                    verticalArrangement = Arrangement.spacedBy(gutter),
+                ) {
+                    HourlyRainStrip(state.forecast.hourly.todayOnly(today))
+                    DailyForecastPanel(
+                        daily = state.forecast.daily,
+                        today = today,
+                        units = state.forecast.units,
+                    )
+                }
+            }
+
+            if (tier.supportsSideBySide) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(gutter),
+                ) {
+                    Box(modifier = Modifier.weight(1f)) { hero() }
+                    panels(Modifier.weight(1f))
+                }
+            } else {
+                hero()
+                panels(Modifier.fillMaxWidth())
+            }
         }
     }
 }

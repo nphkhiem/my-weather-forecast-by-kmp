@@ -1,5 +1,10 @@
 package com.example.my_weather_forecast.presentation.detail
 
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.Composable
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
@@ -62,6 +67,45 @@ private fun DetailScreenPreview(
         )
     }
 }
+
+/** Representative window sizes, so the tier boundaries stay visible while iterating. */
+@Composable
+private fun DetailAtSize(width: Dp, height: Dp, darkTheme: Boolean = false) {
+    WeatherForecastTheme(darkTheme = darkTheme) {
+        Surface(modifier = Modifier.requiredSize(width = width, height = height)) {
+            DetailScreenContent(
+                uiState = previewState(),
+                isRefreshing = false,
+                onRefresh = {},
+                onBack = {},
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun DetailPhonePortraitPreview() = DetailAtSize(390.dp, 844.dp)
+
+@Preview
+@Composable
+private fun DetailPhoneLandscapePreview() = DetailAtSize(844.dp, 390.dp)
+
+@Preview
+@Composable
+private fun DetailSplitScreenPreview() = DetailAtSize(360.dp, 780.dp)
+
+@Preview
+@Composable
+private fun DetailTabletPortraitPreview() = DetailAtSize(834.dp, 1_112.dp)
+
+@Preview
+@Composable
+private fun DetailTabletLandscapePreview() = DetailAtSize(1_112.dp, 834.dp)
+
+@Preview
+@Composable
+private fun DetailTabletLandscapeDarkPreview() = DetailAtSize(1_112.dp, 834.dp, darkTheme = true)
 
 private fun previewCondition(icon: WeatherIcon, isDaytime: Boolean = true) = WeatherCondition(
     owmCode = 800,
