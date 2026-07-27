@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,9 +28,8 @@ import com.example.my_weather_forecast.presentation.theme.ForecastPanelTokens
 import com.example.my_weather_forecast.presentation.theme.WeatherRadii
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.WeatherTypography
-import com.example.my_weather_forecast.presentation.theme.accentColor
 import com.example.my_weather_forecast.presentation.theme.readableName
-import com.example.my_weather_forecast.presentation.theme.toDrawableResource
+import com.example.my_weather_forecast.presentation.theme.WeatherConditionIcon
 import kotlin.math.roundToInt
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalDate
@@ -52,7 +50,6 @@ import myweatherforecast.composeapp.generated.resources.day_wed
 import myweatherforecast.composeapp.generated.resources.detail_daily_hint
 import myweatherforecast.composeapp.generated.resources.detail_daily_title
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 internal const val DAILY_FORECAST_PANEL_TEST_TAG = "daily_forecast_panel"
@@ -247,13 +244,10 @@ private fun DailyDateLabel(dayLabel: String, dateLabel: String, modifier: Modifi
 
 @Composable
 private fun DailyConditionIcon(daily: DailyForecast, modifier: Modifier = Modifier) {
-    Icon(
-        painter = painterResource(daily.condition.icon.toDrawableResource()),
+    WeatherConditionIcon(
+        icon = daily.condition.icon,
+        isDaytime = daily.condition.isDaytime,
         contentDescription = null,
-        tint = daily.condition.icon.accentColor(
-            isDaytime = daily.condition.isDaytime,
-            darkTheme = WeatherTheme.darkTheme,
-        ),
         modifier = modifier.size(ForecastPanelTokens.DailyIconSize),
     )
 }

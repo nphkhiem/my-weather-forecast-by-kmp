@@ -35,7 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.CurrentConditions
 import com.example.my_weather_forecast.domain.model.Units
-import com.example.my_weather_forecast.presentation.theme.AnimatedWeatherIcon
+import com.example.my_weather_forecast.presentation.theme.WeatherConditionIcon
+import com.example.my_weather_forecast.presentation.theme.WeatherIconMotion
 import com.example.my_weather_forecast.presentation.theme.DetailHeroTokens
 import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
@@ -233,11 +234,12 @@ private fun CurrentConditionsHero(
                         style = MaterialTheme.typography.bodyLarge,
                     )
                 }
-                AnimatedWeatherIcon(
+                WeatherConditionIcon(
                     icon = current.condition.icon,
                     isDaytime = current.condition.isDaytime,
                     contentDescription = null,
                     modifier = Modifier.size(DetailHeroTokens.IconSize),
+                    motion = WeatherIconMotion.HERO,
                 )
             }
 
