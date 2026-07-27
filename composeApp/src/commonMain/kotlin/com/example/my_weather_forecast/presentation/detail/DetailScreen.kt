@@ -64,6 +64,7 @@ internal fun DetailScreenContent(
         title = uiState.screenTitle(),
         modifier = modifier,
         contentMaxWidth = WeatherLayout.ReadingMaxWidth,
+        expandedContentMaxWidth = WeatherLayout.PageMaxWidth,
         onNavigationClick = onBack,
         navigationIcon = {
             Icon(

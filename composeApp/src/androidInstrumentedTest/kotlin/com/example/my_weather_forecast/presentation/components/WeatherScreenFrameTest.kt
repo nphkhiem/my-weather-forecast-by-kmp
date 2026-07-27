@@ -2,6 +2,7 @@ package com.example.my_weather_forecast.presentation.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -12,9 +13,12 @@ import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
+import com.example.my_weather_forecast.presentation.theme.LocalWeatherWidthTier
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
+import com.example.my_weather_forecast.presentation.theme.WeatherWidthTier
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -39,6 +43,41 @@ class WeatherScreenFrameTest {
         assertEquals(240.dp, topBarBounds.right - topBarBounds.left)
         assertEquals(240.dp, bodyBounds.right - bodyBounds.left)
         assertTrue(bodyBounds.top >= topBarBounds.bottom)
+    }
+
+    @Test
+    fun givenAPhoneWidth_whenFrameRenders_thenContentSeesTheCompactTier() {
+        assertEquals(WeatherWidthTier.COMPACT, tierAtWidth(400.dp))
+    }
+
+    @Test
+    fun givenATabletWidth_whenFrameRenders_thenContentSeesTheExpandedTier() {
+        assertEquals(WeatherWidthTier.EXPANDED, tierAtWidth(1_000.dp))
+    }
+
+    @Test
+    fun givenAMediumWidth_whenFrameRenders_thenContentStaysSingleColumn() {
+        val tier = tierAtWidth(700.dp)
+
+        assertEquals(WeatherWidthTier.MEDIUM, tier)
+        assertTrue("Medium widths must not split into columns", !tier.supportsSideBySide)
+    }
+
+    private fun tierAtWidth(width: Dp): WeatherWidthTier {
+        lateinit var observed: WeatherWidthTier
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    Box(modifier = Modifier.requiredWidth(width)) {
+                        WeatherScreenFrame(title = "Tier") {
+                            observed = LocalWeatherWidthTier.current
+                        }
+                    }
+                }
+            }
+        }
+        composeTestRule.waitForIdle()
+        return observed
     }
 
     @Test

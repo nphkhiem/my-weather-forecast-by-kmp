@@ -1,5 +1,8 @@
 package com.example.my_weather_forecast.presentation.overview
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
@@ -7,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -16,6 +20,7 @@ import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.AppResult
 import com.example.my_weather_forecast.core.result.WeatherError
@@ -344,4 +349,69 @@ class OverviewScreenTest {
             )
             .assertIsDisplayed()
     }
+
+    @Test
+    fun givenAPhoneWidth_whenOverviewRenders_thenSavedPlacesStackInOneColumn() {
+        setTwoAreasAtWidth(400.dp)
+
+        val first = cardBounds("Chicago")
+        val second = cardBounds("Denver")
+
+        assertTrue(
+            "Chicago bottom ${first.bottom} must sit above Denver top ${second.top} on a phone",
+            first.bottom <= second.top,
+        )
+    }
+
+    @Test
+    fun givenAnExpandedWidth_whenOverviewRenders_thenSavedPlacesShareARow() {
+        setTwoAreasAtWidth(1_000.dp)
+
+        val first = cardBounds("Chicago")
+        val second = cardBounds("Denver")
+
+        assertTrue(
+            "Chicago right ${first.right} must sit left of Denver left ${second.left} when expanded",
+            first.right <= second.left,
+        )
+    }
+
+    private fun cardBounds(city: String) = composeTestRule
+        .onNodeWithContentDescription(city, substring = true)
+        .getUnclippedBoundsInRoot()
+
+    private fun setTwoAreasAtWidth(width: Dp) {
+        val denver = Location(
+            id = 2, name = "Denver", country = "US", state = "CO", lat = 39.74, lon = -104.98, sortOrder = 1,
+        )
+        val savedLocationRepository = FakeSavedLocationRepository()
+        val weatherRepository = FakeWeatherRepository()
+        runBlocking {
+            savedLocationRepository.add(chicago)
+            savedLocationRepository.add(denver)
+        }
+        listOf(chicago, denver).forEach { location ->
+            weatherRepository.setObservation(
+                location.id,
+                ForecastObservation.Success(sampleForecast(location), stale = false),
+            )
+        }
+
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    Box(modifier = Modifier.requiredWidth(width)) {
+                        OverviewScreen(
+                            onOpenSearch = {},
+                            onOpenSettings = {},
+                            onOpenDetail = {},
+                            viewModel = viewModel(savedLocationRepository, weatherRepository),
+                        )
+                    }
+                }
+            }
+        }
+        composeTestRule.waitForIdle()
+    }
+
 }

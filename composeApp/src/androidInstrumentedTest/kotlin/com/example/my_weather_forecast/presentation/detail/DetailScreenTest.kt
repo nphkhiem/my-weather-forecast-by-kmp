@@ -1,5 +1,6 @@
 package com.example.my_weather_forecast.presentation.detail
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -9,6 +10,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -20,6 +22,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeDown
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.domain.model.DailyForecast
@@ -31,6 +34,7 @@ import com.example.my_weather_forecast.domain.model.WeatherCondition
 import com.example.my_weather_forecast.domain.model.WeatherIcon
 import com.example.my_weather_forecast.presentation.platform.WeatherPlatformBehaviorProvider
 import com.example.my_weather_forecast.presentation.theme.WeatherForecastTheme
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import com.example.my_weather_forecast.testutil.FakeSavedLocationRepository
 import com.example.my_weather_forecast.testutil.FakeUnitsPreference
 import com.example.my_weather_forecast.testutil.FakeWeatherRepository
@@ -440,4 +444,89 @@ class DetailScreenTest {
 
         assertEquals(1, weatherRepository.refreshCallCount)
     }
+
+    @Test
+    fun givenACompactWidth_whenDetailRenders_thenPanelsStackInOneColumn() {
+        setAdaptiveDetail(400.dp)
+
+        val hero = boundsOf("current_conditions_hero")
+        val daily = boundsOf("daily_forecast_panel")
+
+        assertTrue(
+            "Hero bottom ${hero.bottom} must sit above daily top ${daily.top} on a phone",
+            hero.bottom <= daily.top,
+        )
+    }
+
+    @Test
+    fun givenAnExpandedWidth_whenDetailRenders_thenHeroAndForecastPanelsSitSideBySide() {
+        setAdaptiveDetail(1_000.dp)
+
+        val hero = boundsOf("current_conditions_hero")
+        val daily = boundsOf("daily_forecast_panel")
+
+        assertTrue(
+            "Hero right ${hero.right} must sit left of daily left ${daily.left} when expanded",
+            hero.right <= daily.left,
+        )
+    }
+
+    @Test
+    fun givenAnExpandedWidth_whenDetailRenders_thenNothingOverflowsTheContentFrame() {
+        setAdaptiveDetail(1_000.dp)
+
+        val frame = boundsOf("weather_screen_content")
+        listOf("current_conditions_hero", "daily_forecast_panel")
+            .forEach { tag ->
+                val bounds = boundsOf(tag)
+                assertTrue(
+                    "$tag left ${bounds.left} must stay inside frame left ${frame.left}",
+                    bounds.left >= frame.left,
+                )
+                assertTrue(
+                    "$tag right ${bounds.right} must stay inside frame right ${frame.right}",
+                    bounds.right <= frame.right,
+                )
+            }
+    }
+
+    @Test
+    fun givenAnExpandedWidth_whenDetailSplitsIntoColumns_thenTheFrameWidensBeyondOneReadingColumn() {
+        setAdaptiveDetail(1_000.dp)
+
+        val frame = boundsOf("weather_screen_content")
+        val frameWidth = frame.right - frame.left
+
+        assertTrue(
+            "Frame width $frameWidth must exceed one reading column " +
+                "(${WeatherLayout.ReadingMaxWidth}) once it splits into two columns",
+            frameWidth > WeatherLayout.ReadingMaxWidth,
+        )
+    }
+
+    private fun boundsOf(tag: String) =
+        composeTestRule.onNodeWithTag(tag, useUnmergedTree = true).getUnclippedBoundsInRoot()
+
+    private fun setAdaptiveDetail(width: Dp) {
+        val forecast = sampleForecast(chicago)
+        composeTestRule.setContent {
+            WeatherPlatformBehaviorProvider {
+                WeatherForecastTheme {
+                    Box(modifier = Modifier.requiredWidth(width)) {
+                        DetailScreenContent(
+                            uiState = DetailUiState.Success(
+                                forecast = forecast,
+                                stale = false,
+                                lastUpdated = forecast.fetchedAt,
+                            ),
+                            isRefreshing = false,
+                            onRefresh = {},
+                            onBack = {},
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 }

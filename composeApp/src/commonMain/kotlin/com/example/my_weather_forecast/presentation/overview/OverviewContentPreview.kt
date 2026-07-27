@@ -4,6 +4,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.ui.unit.Dp
+import com.example.my_weather_forecast.presentation.components.WeatherScreenFrame
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -221,3 +225,48 @@ private fun OverviewPartialFailureLightPreview() = OverviewPartialFailurePreview
 @Preview
 @Composable
 private fun OverviewPartialFailureDarkPreview() = OverviewPartialFailurePreview(darkTheme = true)
+
+/** Representative window sizes. Overview only becomes a two-column grid at the widest tier. */
+@Composable
+private fun OverviewAtSize(width: Dp, height: Dp, darkTheme: Boolean = false) {
+    WeatherPlatformBehaviorProvider {
+        WeatherForecastTheme(darkTheme = darkTheme) {
+            Surface(modifier = Modifier.requiredSize(width = width, height = height)) {
+                WeatherScreenFrame(
+                    title = "Weather",
+                    contentMaxWidth = WeatherLayout.OverviewMaxWidth,
+                ) {
+                    OverviewContent(
+                        uiState = OverviewUiState.Success(sixAreas),
+                        onAreaClick = {},
+                        onRemove = {},
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun OverviewPhonePortraitPreview() = OverviewAtSize(390.dp, 844.dp)
+
+@Preview
+@Composable
+private fun OverviewPhoneLandscapePreview() = OverviewAtSize(844.dp, 390.dp)
+
+@Preview
+@Composable
+private fun OverviewSplitScreenPreview() = OverviewAtSize(360.dp, 780.dp)
+
+@Preview
+@Composable
+private fun OverviewTabletPortraitPreview() = OverviewAtSize(834.dp, 1_112.dp)
+
+@Preview
+@Composable
+private fun OverviewTabletLandscapePreview() = OverviewAtSize(1_112.dp, 834.dp)
+
+@Preview
+@Composable
+private fun OverviewTabletLandscapeDarkPreview() = OverviewAtSize(1_112.dp, 834.dp, darkTheme = true)

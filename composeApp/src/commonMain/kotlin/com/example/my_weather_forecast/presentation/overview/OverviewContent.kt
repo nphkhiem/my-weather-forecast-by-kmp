@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -29,6 +32,9 @@ import com.example.my_weather_forecast.core.result.WeatherError
 import com.example.my_weather_forecast.presentation.theme.OverviewCardTokens
 import com.example.my_weather_forecast.presentation.theme.OverviewStateTokens
 import com.example.my_weather_forecast.presentation.theme.WeatherRadii
+import com.example.my_weather_forecast.presentation.theme.LocalWeatherWidthTier
+import com.example.my_weather_forecast.presentation.theme.WeatherLayout
+import com.example.my_weather_forecast.presentation.theme.gutter
 import com.example.my_weather_forecast.presentation.theme.WeatherSpacing
 import com.example.my_weather_forecast.presentation.theme.WeatherTheme
 import com.example.my_weather_forecast.presentation.theme.WeatherTypography
@@ -56,6 +62,7 @@ import org.jetbrains.compose.resources.stringResource
 
 const val OVERVIEW_CONTENT_TEST_TAG = "overview_content"
 private const val MAX_SAVED_AREAS = 6
+private const val EXPANDED_COLUMNS = 2
 
 @Composable
 fun OverviewContent(
@@ -97,7 +104,7 @@ private fun LoadingContent(modifier: Modifier = Modifier) {
         areaCount = null,
         modifier = modifier,
     ) {
-        item(key = "loading_state") {
+        fullWidthItem(key = "loading_state") {
             OverviewStateSurface(
                 title = stringResource(Res.string.overview_loading_title),
                 message = stringResource(Res.string.overview_loading_message),
@@ -116,10 +123,10 @@ private fun EmptyContent(
         areaCount = 0,
         modifier = modifier,
     ) {
-        item(key = "empty_state_spacing") {
+        fullWidthItem(key = "empty_state_spacing") {
             Spacer(modifier = Modifier.height(OverviewStateTokens.EmptyTopSpacerHeight))
         }
-        item(key = "empty_state") {
+        fullWidthItem(key = "empty_state") {
             OverviewStateSurface(
                 title = stringResource(Res.string.overview_empty_title),
                 message = stringResource(Res.string.overview_empty_message),
@@ -142,7 +149,7 @@ private fun ErrorContent(
         areaCount = null,
         modifier = modifier,
     ) {
-        item(key = "error_state") {
+        fullWidthItem(key = "error_state") {
             OverviewStateSurface(
                 title = stringResource(Res.string.overview_error_title),
                 message = error.toMessage(),
@@ -188,7 +195,7 @@ private fun SuccessContent(
                 onRemove = onRemove,
             )
         }
-        item(key = "add_place") {
+        fullWidthItem(key = "add_place") {
             AddPlaceAction(onClick = onAddArea)
         }
     }
@@ -199,19 +206,27 @@ private fun OverviewCollection(
     areaCount: Int?,
     modifier: Modifier = Modifier,
     isRefreshing: Boolean = false,
-    content: LazyListScope.() -> Unit,
+    content: LazyGridScope.() -> Unit,
 ) {
-    LazyColumn(
+    val tier = LocalWeatherWidthTier.current
+    val gutter = WeatherLayout.gutter(tier)
+    // One column everywhere except the widest tier, where full-width cards would stretch. Six
+    // saved places is the cap, so two columns stay scannable rather than becoming a dense grid.
+    val columns = if (tier.supportsSideBySide) EXPANDED_COLUMNS else 1
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(columns),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(
-            start = WeatherSpacing.Lg,
+            start = gutter,
             top = WeatherSpacing.Md,
-            end = WeatherSpacing.Lg,
+            end = gutter,
             bottom = WeatherSpacing.Xxl,
         ),
         verticalArrangement = Arrangement.spacedBy(WeatherSpacing.Md),
+        horizontalArrangement = Arrangement.spacedBy(WeatherSpacing.Md),
     ) {
-        item(key = "overview_header") {
+        fullWidthItem(key = "overview_header") {
             OverviewSectionHeader(
                 areaCount = areaCount,
                 isRefreshing = isRefreshing,
@@ -220,6 +235,12 @@ private fun OverviewCollection(
         content()
     }
 }
+
+/** Headers, state surfaces, and the add action always span the whole collection width. */
+private fun LazyGridScope.fullWidthItem(
+    key: String,
+    content: @Composable () -> Unit,
+) = item(key = key, span = { GridItemSpan(maxLineSpan) }) { content() }
 
 @Composable
 private fun OverviewSectionHeader(
