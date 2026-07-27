@@ -56,6 +56,28 @@ that area's real weather and time of day, which is separate from your Light/Dark
   </tr>
 </table>
 
+Settings is where you pick the theme, so it is worth seeing in both. The three preview cards show
+you what System, Light, and Dark actually look like before you commit to one, and units sit
+underneath in a segmented control.
+
+<table>
+  <tr>
+    <th></th>
+    <th>Settings - Light</th>
+    <th>Settings - Dark</th>
+  </tr>
+  <tr>
+    <td><strong>Android</strong></td>
+    <td><img src="docs/screenshots/android_settings_light.png" width="220"></td>
+    <td><img src="docs/screenshots/android_settings_dark.png" width="220"></td>
+  </tr>
+  <tr>
+    <td><strong>iOS</strong></td>
+    <td><img src="docs/screenshots/ios_settings_light.png" width="220"></td>
+    <td><img src="docs/screenshots/ios_settings_dark.png" width="220"></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Overview**: all your saved places at a glance, with the current temperature, the day's high
